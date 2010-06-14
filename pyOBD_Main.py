@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 # -*- coding: iso-8859-1 -*-
 # TuxTruck Main Frame - This is the root of everything, called from the App in main.py
-# Time-stamp: "2010-06-13 00:17:33 jantman"
+# Time-stamp: "2010-06-13 00:35:21 jantman"
 # $LastChangedRevision$
 # $HeadURL$
 #
@@ -16,6 +16,8 @@ import SpeedMeter as SM
 from math import pi, sqrt
 # This Is For Latin/Greek Symbols I Used In The Demo Only
 wx.SetDefaultPyEncoding('iso8859-1')
+
+from pyOBD_Meters_RPM import *
 
 # SpeedMeter from http://xoomer.virgilio.it/infinity77/main/SpeedMeter.html and referenced at http://wiki.wxpython.org/SpeedMeter
 
@@ -109,58 +111,8 @@ class pyOBD_Main(wx.Frame):
         self.SpeedWindow1.SetSpeedValue(44)
 
         
-        # Second SpeedMeter: We Use The Following Styles:
-        #
-        # SM_DRAW_HAND: We Want To Draw The Hand (Arrow) Indicator
-        # SM_DRAW_SECTORS: Full Sectors Will Be Drawn, To Indicate Different Intervals
-        # SM_DRAW_MIDDLE_TEXT: We Draw Some Text In The Center Of SpeedMeter
-        # SM_DRAW_SECONDARY_TICKS: We Draw Secondary (Intermediate) Ticks Between
-        #                          The Main Ticks (Intervals)
-        # SM_DRAW_PARTIAL_FILLER: The Region Passed By The Hand Indicator Is Highlighted
-        #                         With A Different Filling Colour
-        # SM_DRAW_SHADOW: A Shadow For The Hand Indicator Is Drawn
-        
-        self.SpeedWindow2 = SM.SpeedMeter(panel2,
-                                          extrastyle=SM.SM_DRAW_HAND |
-                                          SM.SM_DRAW_SECTORS |
-                                          SM.SM_DRAW_MIDDLE_TEXT |
-                                          SM.SM_DRAW_SECONDARY_TICKS |
-                                          SM.SM_DRAW_PARTIAL_FILLER |
-                                          SM.SM_DRAW_SHADOW
-                                          )
-
-        # We Want To Simulate A Clock. Somewhat Tricky, But Did The Job
-        self.SpeedWindow2.SetAngleRange(pi/2, 5*pi/2)
-
-        intervals = range(0, 13)
-        self.SpeedWindow2.SetIntervals(intervals)
-
-        colours = [wx.SystemSettings_GetColour(0)]*12
-        self.SpeedWindow2.SetIntervalColours(colours)
-
-        ticks = [str(interval) for interval in intervals]
-        ticks[-1] = ""
-        ticks[0] = "12"
-        self.SpeedWindow2.SetTicks(ticks)
-        self.SpeedWindow2.SetTicksColour(wx.BLUE)
-        self.SpeedWindow2.SetTicksFont(wx.Font(11, wx.SCRIPT, wx.NORMAL, wx.BOLD, True))
-        self.SpeedWindow2.SetNumberOfSecondaryTicks(4)
-
-        # Set The Colour For The External Arc        
-        self.SpeedWindow2.SetArcColour(wx.BLUE)
-
-        self.SpeedWindow2.SetHandColour(wx.BLACK)
-
-        self.SpeedWindow2.SetMiddleText("0 s")
-        self.SpeedWindow2.SetMiddleTextColour(wx.RED)
-
-        # We Set The Background Colour Of The SpeedMeter OutSide The Control
-        self.SpeedWindow2.SetSpeedBackground(wx.WHITE)
-
-        # Set The Colour For The Shadow
-        self.SpeedWindow2.SetShadowColour(wx.Colour(128, 128, 128))        
-
-        self.SpeedWindow2.SetSpeedValue(0.0)
+        # jantman - this is my test
+        self.SpeedWindow2 = pyOBD_Meters_RPM(panel2)
 
 
         # Third SpeedMeter: We Use The Following Styles:
@@ -421,7 +373,7 @@ class pyOBD_Main(wx.Frame):
         hsizer2.Add(button2, 0, wx.LEFT, 5)
         hsizer2.Add(stattext2, 1, wx.EXPAND)
         
-        bsizer2.Add(self.SpeedWindow2, 1, wx.EXPAND)        
+        bsizer2.Add(self.SpeedWindow2.getSpeedWindow(), 1, wx.EXPAND)        
         bsizer2.Add(hsizer2, 0, wx.EXPAND)        
         panel2.SetSizer(bsizer2)
 
