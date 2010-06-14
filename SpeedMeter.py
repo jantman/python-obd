@@ -1,3 +1,4 @@
+# -*- coding: iso-8859-1 -*-
 # --------------------------------------------------------------------------- #
 # SPEEDMETER Control wxPython IMPLEMENTATION
 # Python Code By:
@@ -138,6 +139,7 @@ SM_BUFFERED_DC = 1
 # SM_DRAW_FANCY_TICKS: With This Style You Can Use XML Tags To Create
 #                      Some Custom Text And Draw It At The Ticks Position.
 #                      See wx.lib.fancytext For The Tags.
+# SM_DRAW_BOTTOM_TEXT: Some Text Is Printed In The Bottom Of The Control
 
 SM_ROTATE_TEXT = 1
 SM_DRAW_SECTORS = 2
@@ -150,6 +152,7 @@ SM_DRAW_MIDDLE_TEXT = 128
 SM_DRAW_MIDDLE_ICON = 256
 SM_DRAW_GRADIENT = 512
 SM_DRAW_FANCY_TICKS = 1024
+SM_DRAW_BOTTOM_TEXT = 2048
 
 #----------------------------------------------------------------------
 # Event Binding
@@ -314,7 +317,8 @@ class SpeedMeter(BufferedWindow):
            - SM_DRAW_GRADIENT: A Gradient Of Colours Will Fill The Control;
            - SM_DRAW_FANCY_TICKS: With This Style You Can Use XML Tags To Create
                                   Some Custom Text And Draw It At The Ticks Position.
-                                  See wx.lib.fancytext For The Tags.
+                                  See wx.lib.fancytext For The Tags.;
+           - SM_DRAW_BOTTOM_TEXT: Some Text Is Printed In The Bottom Of The Control
 
         b) bufferedstyle: This Value Allows You To Use The Normal wx.PaintDC Or The
                           Double Buffered Drawing Options:
@@ -378,6 +382,9 @@ class SpeedMeter(BufferedWindow):
         self.SetMiddleText()
         self.SetMiddleTextFont()
         self.SetMiddleTextColour()
+        self.SetBottomText()
+        self.SetBottomTextFont()
+        self.SetBottomTextColour()
         self.SetFirstGradientColour()
         self.SetSecondGradientColour()
         self.SetHandStyle()
@@ -882,9 +889,56 @@ class SpeedMeter(BufferedWindow):
             mw, mh, dummy, dummy = dc.GetFullTextExtent(middletext, middlefont)
             
             newx = centerX + 1.5*mw*cos(middleangle) - mw/2.0
-            newy = centerY - 1.5*mh*sin(middleangle) - mh/2.0
+            newy =  centerY - 1.5*mh*sin(middleangle) - mh/2.0
             dc.SetTextForeground(middlecolour)
             dc.DrawText(middletext, newx, newy)
+
+        # Here We Draw The Text In The Bottom
+        # This Is Like The "Km/h" Or "mph" Text In The Cars
+        if self._extrastyle & SM_DRAW_BOTTOM_TEXT:
+            bottomcolour = self.GetBottomTextColour()            
+            bottomtext = self.GetBottomText()
+            
+            # hack for two lines of text
+            if bottomtext.find("\n") != -1:
+                # we have a newline
+                foo = bottomtext.partition("\n")
+                bottomtext1 = foo[0]
+                bottomtext2 = foo[2]
+                
+                bottomangle = (startangle + endangle)/2.0
+            
+                bottomfont, bottomsize = self.GetBottomTextFont()
+                bottomsize = self.scale*bottomsize
+                bottomfont.SetPointSize(int(bottomsize))
+                dc.SetFont(bottomfont)
+
+                mw, mh, dummy, dummy = dc.GetFullTextExtent(bottomtext1, bottomfont)
+                newx = centerX + 1.5*mw*cos(bottomangle) - mw/2.0
+                newy =  ystart
+                dc.SetTextForeground(bottomcolour)
+                dc.DrawText(bottomtext1, newx, newy)
+
+                mw, mh, dummy, dummy = dc.GetFullTextExtent(bottomtext2, bottomfont)
+                newx = centerX + 1.5*mw*cos(bottomangle) - mw/2.0
+                newy =  ystart + mh + (mh/2)
+                dc.SetTextForeground(bottomcolour)
+                dc.DrawText(bottomtext2, newx, newy)
+
+            else:
+                bottomangle = (startangle + endangle)/2.0
+            
+                bottomfont, bottomsize = self.GetBottomTextFont()
+                bottomsize = self.scale*bottomsize
+                bottomfont.SetPointSize(int(bottomsize))
+                dc.SetFont(bottomfont)
+
+                mw, mh, dummy, dummy = dc.GetFullTextExtent(bottomtext, bottomfont)
+            
+                newx = centerX + 1.5*mw*cos(bottomangle) - mw/2.0
+                newy =  ystart
+                dc.SetTextForeground(bottomcolour)
+                dc.DrawText(bottomtext, newx, newy)
 
         # Here We Draw The Icon In The Middle, Near The Start Of The Arrow (If Present)
         # This Is Like The "Fuel" Icon In The Cars                
@@ -1076,6 +1130,7 @@ class SpeedMeter(BufferedWindow):
             if len(colours) != len(self._intervals) - 1:
                 errstr = "\nERROR: Length Of Colour List Does Not Match Length"
                 errstr = errstr + " Of Intervals Ranges List."
+                print errstr
                 raise errstr
                 return
 
@@ -1327,6 +1382,53 @@ class SpeedMeter(BufferedWindow):
         
         return self._middlecolour
     
+    def SetBottomText(self, text=None):
+        """ Sets The Text To Be Drawn Near The Bottom Of SpeedMeter. Can have up to one newline."""
+        
+        if text is None:
+            text = ""
+
+        self._bottomtext = text
+
+
+    def GetBottomText(self):
+        """ Gets The Text To Be Drawn Near The Center Of SpeedMeter. """
+        
+        return self._bottomtext
+
+
+    def SetBottomTextFont(self, font=None):
+        """ Sets The Font For The Text In The Bottom."""
+        
+        if font is None:
+            self._bottomtextfont = wx.Font(1, wx.SWISS, wx.NORMAL, wx.BOLD, False)
+            self._bottomtextsize = 10.0
+            self._bottomtextfont.SetPointSize(self._bottomtextsize)
+        else:
+            self._bottomtextfont = font
+            self._bottomtextsize = font.GetPointSize()
+            self._bottomtextfont.SetPointSize(self._bottomtextsize)
+
+
+    def GetBottomTextFont(self):
+        """ Gets The Font For The Text In The Bottom."""
+        
+        return self._bottomtextfont, self._bottomtextsize
+    
+
+    def SetBottomTextColour(self, colour=None):
+        """ Sets The Colour For The Text In The Bottom."""
+        
+        if colour is None:
+            colour = wx.BLUE
+
+        self._bottomcolour = colour
+
+
+    def GetBottomTextColour(self):
+        """ Gets The Colour For The Text In The Bottom."""
+        
+        return self._bottomcolour
 
     def SetMiddleIcon(self, icon):
         """ Sets The Icon To Be Drawn Near The Center Of SpeedMeter. """
@@ -1514,6 +1616,10 @@ class SpeedMeter(BufferedWindow):
             stringstyle.append("SM_DRAW_MIDDLE_TEXT")
             integerstyle.append(SM_DRAW_MIDDLE_TEXT)
         
+        if self._extrastyle & SM_DRAW_BOTTOM_TEXT:
+            stringstyle.append("SM_DRAW_BOTTOM_TEXT")
+            integerstyle.append(SM_DRAW_BOTTOM_TEXT)
+
         if self._extrastyle & SM_DRAW_MIDDLE_ICON:
             stringstyle.append("SM_DRAW_MIDDLE_ICON")
             integerstyle.append(SM_DRAW_MIDDLE_ICON)

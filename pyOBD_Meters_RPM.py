@@ -1,28 +1,35 @@
 #! /usr/bin/env python
 # -*- coding: iso-8859-1 -*-
-# TuxTruck Main Frame - This is the root of everything, called from the App in main.py
-# Time-stamp: "2010-06-13 00:39:04 jantman"
+
 # $LastChangedRevision$
 # $HeadURL$
-#
-# Copyright 2008 Jason Antman. Licensed under GNU GPLv3 or latest version (at author's discretion).
-# Jason Antman - jason@jasonantman.com - http://www.jasonantman.com
-# Project web site at http://www.jasonantman.com/tuxtruck/
+
+"""
+Module for the RPM-style meter.
+"""
 
 import wx
 import SpeedMeter as SM
 from math import pi, sqrt
 
-# todo - need to modify speed meter for bottom and/or top text
+"""
+@todo: need to modify speed meter for bottom and/or top text
+"""
 
 class pyOBD_Meters_RPM():
     """
-
+    Creates a RPM-style meter. Wrapper around SpeedMeter that sets up a meter with the right
+    settings, look, etc. for a RPM gauge. Sets up the labels and handles scaling of values.
     """
+
+    staticText = "" # text shown on the meter that doesn't change - label
 
     def __init__(self, myPanel):
         """
-
+        Initialize the meter, set everything up.
+        
+        @param myPanel: a wx.Panel that the meter will be in
+        @type myPanel: L{wx.Panel}
         """
 
         # Fifth SpeedMeter: We Use The Following Styles:
@@ -38,18 +45,20 @@ class pyOBD_Meters_RPM():
                                           extrastyle=SM.SM_DRAW_HAND |
                                           SM.SM_DRAW_PARTIAL_SECTORS |
                                           SM.SM_DRAW_SECONDARY_TICKS |
-                                          SM.SM_DRAW_MIDDLE_TEXT
+                                          SM.SM_DRAW_BOTTOM_TEXT
                                           )
 
         # We Want To Simulate The Round Per Meter Control In A Car
         self.SpeedWindow5.SetAngleRange(-pi/6, 7*pi/6)
 
-        intervals = range(0, 9)
+        intervals = range(0, 5)
         self.SpeedWindow5.SetIntervals(intervals)
 
-        colours = [wx.BLACK]*6
+        colours = [wx.BLACK]*2
         colours.append(wx.Colour(255, 255, 0))
         colours.append(wx.RED)
+        print len(intervals)
+        print len(colours)
         self.SpeedWindow5.SetIntervalColours(colours)
 
         ticks = [str(interval) for interval in intervals]
@@ -65,14 +74,44 @@ class pyOBD_Meters_RPM():
 
         self.SpeedWindow5.SetShadowColour(wx.Colour(50, 50, 50))
 
-        self.SpeedWindow5.SetMiddleText("rpm")
-        self.SpeedWindow5.SetBottomText("hello")
-        self.SpeedWindow5.SetMiddleTextColour(wx.WHITE)
-        self.SpeedWindow5.SetMiddleTextFont(wx.Font(8, wx.SWISS, wx.NORMAL, wx.BOLD))
+        #self.SpeedWindow5.SetMiddleText("rpm")
+        #self.SpeedWindow5.SetMiddleTextColour(wx.WHITE)
+        #self.SpeedWindow5.SetMiddleTextFont(wx.Font(8, wx.SWISS, wx.NORMAL, wx.BOLD))
+        self.staticText = "RPM x1000"
+        self.SpeedWindow5.SetBottomText(self.staticText)
+        self.SpeedWindow5.SetBottomTextColour(wx.WHITE)
+        self.SpeedWindow5.SetBottomTextFont(wx.Font(8, wx.SWISS, wx.NORMAL, wx.BOLD))
         self.SpeedWindow5.SetSpeedBackground(wx.Colour(160, 160, 160)) 
         
-        self.SpeedWindow5.SetSpeedValue(5.6)
+        self.SpeedWindow5.SetSpeedValue(.68)
 
     def getSpeedWindow(self):
+        """
+        Returns the SpeedMeter instance that we created, so we can add it to a Panel, etc.
+        @return: SpeedMeter
+        @rtype: L{SpeedMeter}
+        """
         return self.SpeedWindow5
 
+    def SetText(self, text=None):
+        """
+        Sets The Text To Be Drawn Near The Center Of SpeedMeter (MiddleText).
+        @param text: the text to be drawn
+        @type text: C{string}
+        """
+        
+        if text is None:
+            text = ""
+
+        self.SpeedWindow5._middletext = text
+
+    def SetValue(self, value=None):
+        """
+        Sets the value of the meter (where the needle points). Sets the text value display if used and enabled.
+        @param value: Value for the meter.
+        """
+        if value is None:
+            return
+        else:
+            self.SpeedWindow5.SetSpeedValue(value)
+            #self.SpeedWindow5.SetBottomText(self.staticText + "\n" + (str)((int)(value * 1000)))

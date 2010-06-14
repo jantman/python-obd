@@ -1,0 +1,435 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>SpeedMeter</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            ><a class="navbar" target="_top" href="http://pyOBD.jasonantman.com">pyOBD</a></th>
+          </tr></table></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        Module&nbsp;SpeedMeter
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="SpeedMeter-module.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<!-- ==================== MODULE DESCRIPTION ==================== -->
+<h1 class="epydoc">Module SpeedMeter</h1><p class="nomargin-top"><span class="codelink"><a href="SpeedMeter-pysrc.html">source&nbsp;code</a></span></p>
+<pre class="literalblock">
+Description:
+
+SpeedMeter Tries To Reproduce The Behavior Of Some Car Controls (But Not Only),
+By Creating An &quot;Angular&quot; Control (Actually, Circular). I Remember To Have Seen
+It Somewhere, And I Decided To Implement It In wxPython.
+
+SpeedMeter Starts Its Construction From An Empty Bitmap, And It Uses Some
+Functions Of The wx.DC Class To Create The Rounded Effects. Everything Is
+Processed In The Draw() Method Of SpeedMeter Class.
+
+This Implementation Allows You To Use Either Directly The wx.PaintDC, Or The
+Better (For Me) Double Buffered Style With wx.BufferedPaintDC. The Double
+Buffered Implementation Has Been Adapted From The wxPython Wiki Example:
+
+http://wiki.wxpython.org/index.cgi/DoubleBufferedDrawing
+
+
+Usage:
+
+SpeedWindow1 = SM.SpeedMeter(parent,
+                             bufferedstyle,
+                             extrastyle,
+                             mousestyle
+                             )
+
+None Of The Options (A Part Of Parent Class) Are Strictly Required, If You
+Use The Defaults You Get A Very Simple SpeedMeter. For The Full Listing Of
+The Input Parameters, See The SpeedMeter __init__() Method.
+
+
+Methods And Settings:
+
+SpeedMeter Is Highly Customizable, And In Particular You Can Set:
+
+- The Start And End Angle Of Existence For SpeedMeter;
+- The Intervals In Which You Divide The SpeedMeter (Numerical Values);
+- The Corresponding Thicks For The Intervals;
+- The Interval Colours (Different Intervals May Have Different Filling Colours);
+- The Ticks Font And Colour;
+- The Background Colour (Outsize The SpeedMeter Region);
+- The External Arc Colour;
+- The Hand (Arrow) Colour;
+- The Hand's Shadow Colour;
+- The Hand's Style (&quot;Arrow&quot; Or &quot;Hand&quot;);
+- The Partial Filler Colour;
+- The Number Of Secondary (Intermediate) Ticks;
+- The Direction Of Increasing Speed (&quot;Advance&quot; Or &quot;Reverse&quot;);
+- The Text To Be Drawn In The Middle And Its Font;
+- The Icon To Be Drawn In The Middle;
+- The First And Second Gradient Colours (That Fills The SpeedMeter Control);
+- The Current Value.
+
+For More Info On Methods And Initial Styles, Please Refer To The __init__()
+Method For SpeedMeter Or To The Specific Functions.
+
+
+SpeedMeter Control Is Freeware And Distributed Under The wxPython License. 
+
+Latest Revision: Andrea Gavana @ 10 Oct 2005, 22.40 CET
+
+</pre>
+
+<!-- ==================== CLASSES ==================== -->
+<a name="section-Classes"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Classes</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-Classes"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="SpeedMeter.BufferedWindow-class.html" class="summary-name">BufferedWindow</a><br />
+      A Buffered window class.
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="SpeedMeter.SpeedMeter-class.html" class="summary-name">SpeedMeter</a>
+    </td>
+  </tr>
+</table>
+<!-- ==================== VARIABLES ==================== -->
+<a name="section-Variables"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Variables</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-Variables"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="SM_NORMAL_DC"></a><span class="summary-name">SM_NORMAL_DC</span> = <code title="0">0</code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="SM_BUFFERED_DC"></a><span class="summary-name">SM_BUFFERED_DC</span> = <code title="1">1</code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="SM_ROTATE_TEXT"></a><span class="summary-name">SM_ROTATE_TEXT</span> = <code title="1">1</code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="SM_DRAW_SECTORS"></a><span class="summary-name">SM_DRAW_SECTORS</span> = <code title="2">2</code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="SM_DRAW_PARTIAL_SECTORS"></a><span class="summary-name">SM_DRAW_PARTIAL_SECTORS</span> = <code title="4">4</code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="SM_DRAW_HAND"></a><span class="summary-name">SM_DRAW_HAND</span> = <code title="8">8</code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="SM_DRAW_SHADOW"></a><span class="summary-name">SM_DRAW_SHADOW</span> = <code title="16">16</code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="SM_DRAW_PARTIAL_FILLER"></a><span class="summary-name">SM_DRAW_PARTIAL_FILLER</span> = <code title="32">32</code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="SM_DRAW_SECONDARY_TICKS"></a><span class="summary-name">SM_DRAW_SECONDARY_TICKS</span> = <code title="64">64</code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="SM_DRAW_MIDDLE_TEXT"></a><span class="summary-name">SM_DRAW_MIDDLE_TEXT</span> = <code title="128">128</code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="SM_DRAW_MIDDLE_ICON"></a><span class="summary-name">SM_DRAW_MIDDLE_ICON</span> = <code title="256">256</code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="SM_DRAW_GRADIENT"></a><span class="summary-name">SM_DRAW_GRADIENT</span> = <code title="512">512</code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="SM_DRAW_FANCY_TICKS"></a><span class="summary-name">SM_DRAW_FANCY_TICKS</span> = <code title="1024">1024</code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="SM_DRAW_BOTTOM_TEXT"></a><span class="summary-name">SM_DRAW_BOTTOM_TEXT</span> = <code title="2048">2048</code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="SM_MOUSE_TRACK"></a><span class="summary-name">SM_MOUSE_TRACK</span> = <code title="1">1</code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="fontfamily"></a><span class="summary-name">fontfamily</span> = <code title="[70, 71, 72, 73, 74, 75, 76, 77]"><code class="variable-group">[</code>70<code class="variable-op">, </code>71<code class="variable-op">, </code>72<code class="variable-op">, </code>73<code class="variable-op">, </code>74<code class="variable-op">, </code>75<code class="variable-op">, </code>76<code class="variable-op">, </code>77<code class="variable-group">]</code></code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="SpeedMeter-module.html#familyname" class="summary-name">familyname</a> = <code title="['default',
+ 'decorative',
+ 'roman',
+ 'script',
+ 'swiss',
+ 'modern',
+ 'teletype']"><code class="variable-group">[</code><code class="variable-quote">'</code><code class="variable-string">default</code><code class="variable-quote">'</code><code class="variable-op">, </code><code class="variable-quote">'</code><code class="variable-string">decorative</code><code class="variable-quote">'</code><code class="variable-op">, </code><code class="variable-quote">'</code><code class="variable-string">roman</code><code class="variable-quote">'</code><code class="variable-op">, </code><code class="variable-quote">'</code><code class="variable-string">script</code><code class="variable-quote">'</code><code class="variable-op">, </code><code class="variable-quote">'</code><code class="variable-string">swi</code><code class="variable-ellipsis">...</code></code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="weights"></a><span class="summary-name">weights</span> = <code title="[90, 91, 92]"><code class="variable-group">[</code>90<code class="variable-op">, </code>91<code class="variable-op">, </code>92<code class="variable-group">]</code></code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="weightsname"></a><span class="summary-name">weightsname</span> = <code title="['normal', 'light', 'bold']"><code class="variable-group">[</code><code class="variable-quote">'</code><code class="variable-string">normal</code><code class="variable-quote">'</code><code class="variable-op">, </code><code class="variable-quote">'</code><code class="variable-string">light</code><code class="variable-quote">'</code><code class="variable-op">, </code><code class="variable-quote">'</code><code class="variable-string">bold</code><code class="variable-quote">'</code><code class="variable-group">]</code></code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="styles"></a><span class="summary-name">styles</span> = <code title="[90, 93, 94]"><code class="variable-group">[</code>90<code class="variable-op">, </code>93<code class="variable-op">, </code>94<code class="variable-group">]</code></code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="stylesname"></a><span class="summary-name">stylesname</span> = <code title="['normal', 'italic', 'slant']"><code class="variable-group">[</code><code class="variable-quote">'</code><code class="variable-string">normal</code><code class="variable-quote">'</code><code class="variable-op">, </code><code class="variable-quote">'</code><code class="variable-string">italic</code><code class="variable-quote">'</code><code class="variable-op">, </code><code class="variable-quote">'</code><code class="variable-string">slant</code><code class="variable-quote">'</code><code class="variable-group">]</code></code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="__package__"></a><span class="summary-name">__package__</span> = <code title="None">None</code>
+    </td>
+  </tr>
+</table>
+<p class="indent-wrapped-lines"><b>Imports:</b>
+  <span title="wx">wx</span>,
+  <span title="wx.lib.fancytext">fancytext</span>,
+  <span title="math.pi">pi</span>,
+  <span title="math.sin">sin</span>,
+  <span title="math.cos">cos</span>,
+  <span title="math.log">log</span>,
+  <span title="math.sqrt">sqrt</span>,
+  <span title="math.atan2">atan2</span>
+</p><br />
+<!-- ==================== VARIABLES DETAILS ==================== -->
+<a name="section-VariablesDetails"></a>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Variables Details</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-VariablesDetails"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+</table>
+<a name="familyname"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <h3 class="epydoc">familyname</h3>
+  
+  <dl class="fields">
+  </dl>
+  <dl class="fields">
+    <dt>Value:</dt>
+      <dd><table><tr><td><pre class="variable">
+<code class="variable-group">[</code><code class="variable-quote">'</code><code class="variable-string">default</code><code class="variable-quote">'</code><code class="variable-op">,</code>
+ <code class="variable-quote">'</code><code class="variable-string">decorative</code><code class="variable-quote">'</code><code class="variable-op">,</code>
+ <code class="variable-quote">'</code><code class="variable-string">roman</code><code class="variable-quote">'</code><code class="variable-op">,</code>
+ <code class="variable-quote">'</code><code class="variable-string">script</code><code class="variable-quote">'</code><code class="variable-op">,</code>
+ <code class="variable-quote">'</code><code class="variable-string">swiss</code><code class="variable-quote">'</code><code class="variable-op">,</code>
+ <code class="variable-quote">'</code><code class="variable-string">modern</code><code class="variable-quote">'</code><code class="variable-op">,</code>
+ <code class="variable-quote">'</code><code class="variable-string">teletype</code><code class="variable-quote">'</code><code class="variable-group">]</code>
+</pre></td></tr></table>
+</dd>
+  </dl>
+</td></tr></table>
+</div>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            ><a class="navbar" target="_top" href="http://pyOBD.jasonantman.com">pyOBD</a></th>
+          </tr></table></th>
+  </tr>
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%%">
+  <tr>
+    <td align="left" class="footer">
+    <a href="epydoc-log.html">Generated by Epydoc
+    3.0.1 on Mon Jun 14 13:58:21 2010</a>
+    </td>
+    <td align="right" class="footer">
+      <a target="mainFrame" href="http://epydoc.sourceforge.net"
+        >http://epydoc.sourceforge.net</a>
+    </td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie();
+  // -->
+</script>
+</body>
+</html>

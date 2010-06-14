@@ -1,7 +1,6 @@
-#! /usr/bin/env python
 # -*- coding: iso-8859-1 -*-
 # TuxTruck Main Frame - This is the root of everything, called from the App in main.py
-# Time-stamp: "2010-06-13 00:35:21 jantman"
+# Time-stamp: "2010-06-14 14:45:51 jantman"
 # $LastChangedRevision$
 # $HeadURL$
 #
@@ -12,27 +11,25 @@
 import wx # import wx for the GUI
 
 import SpeedMeter as SM
-# for SpeedMeter
 from math import pi, sqrt
+# SpeedMeter from http://xoomer.virgilio.it/infinity77/main/SpeedMeter.html and referenced at http://wiki.wxpython.org/SpeedMeter
+
 # This Is For Latin/Greek Symbols I Used In The Demo Only
 wx.SetDefaultPyEncoding('iso8859-1')
 
+#import pyOBD_Meters_RPM as Meter_RPM
 from pyOBD_Meters_RPM import *
 
-# SpeedMeter from http://xoomer.virgilio.it/infinity77/main/SpeedMeter.html and referenced at http://wiki.wxpython.org/SpeedMeter
+
 
 class pyOBD_Main(wx.Frame):
     """
-    This is the top-level frame. It's the root of everything and everything happens (or is strated here).
-    THIS IS CALLED from main.py, which is the runnable main program file.
+    This is the top-level frame. It's the root of everything, and what is run by the executable.
     """
 
     def __init__(self, parent, id):
         """
-        This is the BIG function. It initiates EVERYTHING that gets initiated at start, 
-        including settings, and all components that must run as long as the app is running.
-        It SHOULD initiate GPS, Phone, and anything else that could take a while to start,
-        as soon as possible. It also initiates everything that must run constantly.
+        Init the GUI and set everything up, Create and init all of the meters.
         """
         wx.Frame.__init__(self, parent, id, '', style=wx.NO_BORDER) # init the main frame
 
@@ -188,7 +185,8 @@ class pyOBD_Main(wx.Frame):
         colours.append(wx.RED)
         self.SpeedWindow4.SetIntervalColours(colours)
 
-        ticks = [str(interval) + "°" for interval in intervals]
+        # in the quotes should be the char for \xb0
+        ticks = [str(interval) + "\xb0" for interval in intervals]
         self.SpeedWindow4.SetTicks(ticks)
         self.SpeedWindow4.SetTicksColour(wx.BLACK)
         self.SpeedWindow4.SetTicksFont(wx.Font(7, wx.TELETYPE, wx.NORMAL, wx.BOLD))
@@ -530,8 +528,9 @@ class pyOBD_Main(wx.Frame):
         else:
             self.currvalue = self.currvalue + 1
 
-        self.SpeedWindow2.SetMiddleText(str(self.currvalue) + " s")            
-        self.SpeedWindow2.SetSpeedValue(self.currvalue/5.0)
+        self.SpeedWindow2.SetText(str(self.currvalue) + " s")            
+        #self.SpeedWindow2.SetValue(self.currvalue/5.0)
+        self.SpeedWindow2.SetValue(3.80)
 
 
     def OnStopClock(self, event):
