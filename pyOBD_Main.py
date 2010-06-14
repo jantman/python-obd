@@ -1,6 +1,6 @@
 # -*- coding: iso-8859-1 -*-
 # TuxTruck Main Frame - This is the root of everything, called from the App in main.py
-# Time-stamp: "2010-06-14 14:45:51 jantman"
+# Time-stamp: "2010-06-14 15:38:24 jantman"
 # $LastChangedRevision$
 # $HeadURL$
 #
@@ -523,14 +523,10 @@ class pyOBD_Main(wx.Frame):
 
 
     def ClockTimer(self):
-        if self.currvalue >= 59:
-            self.currvalue = 0
+        if self.SpeedWindow2.GetValue() == .68:
+            self.SpeedWindow2.SetValue(3.80)
         else:
-            self.currvalue = self.currvalue + 1
-
-        self.SpeedWindow2.SetText(str(self.currvalue) + " s")            
-        #self.SpeedWindow2.SetValue(self.currvalue/5.0)
-        self.SpeedWindow2.SetValue(3.80)
+            self.SpeedWindow2.SetValue(.68)
 
 
     def OnStopClock(self, event):

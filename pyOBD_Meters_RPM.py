@@ -11,6 +11,7 @@ Module for the RPM-style meter.
 import wx
 import SpeedMeter as SM
 from math import pi, sqrt
+import wx.gizmos as gizmos
 
 """
 @todo: need to modify speed meter for bottom and/or top text
@@ -23,6 +24,8 @@ class pyOBD_Meters_RPM():
     """
 
     staticText = "" # text shown on the meter that doesn't change - label
+    led = None # variable for the LEDNumberControl
+    currentValue = 0
 
     def __init__(self, myPanel):
         """
@@ -109,9 +112,33 @@ class pyOBD_Meters_RPM():
         """
         Sets the value of the meter (where the needle points). Sets the text value display if used and enabled.
         @param value: Value for the meter.
+        @type value: C{int} or C{float}
+
+        @todo: led stuff was moved here so the SpeedMeter has completed its init.
         """
         if value is None:
             return
         else:
+            self.currentValue = value
             self.SpeedWindow5.SetSpeedValue(value)
-            #self.SpeedWindow5.SetBottomText(self.staticText + "\n" + (str)((int)(value * 1000)))
+            
+            if self.led is None:
+                # LED number control
+                pos = (self.SpeedWindow5.GetWidth()/2 - 60, self.SpeedWindow5.GetBottomTextBottom())
+                size = (120, 30)
+                style = gizmos.LED_ALIGN_CENTER | wx.DOUBLE_BORDER #wx.NO_BORDER
+                self.led = gizmos.LEDNumberCtrl(self.getSpeedWindow(), -1, pos, size, style)
+                #self.led.SetBackgroundColour(self.SpeedWindow5.GetSpeedBackground())
+                print self.led.GetBorder()
+                print wx.NO_BORDER
+
+            self.led.SetValue(str(int(value*1000)))
+
+    def GetValue(self):
+        """
+        Gets the meter's current value.
+
+        @return: value
+        @rtype: C{float}
+        """
+        return self.currentValue

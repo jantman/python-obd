@@ -288,6 +288,8 @@ class BufferedWindow(wx.Window):
 #----------------------------------------------------------------------
 
 class SpeedMeter(BufferedWindow):
+
+    bottomTextBottom = None
     
     def __init__(self, parent, id=wx.ID_ANY, pos=wx.DefaultPosition,
                  size=wx.DefaultSize, extrastyle=SM_DRAW_HAND,
@@ -916,12 +918,13 @@ class SpeedMeter(BufferedWindow):
                 mw, mh, dummy, dummy = dc.GetFullTextExtent(bottomtext1, bottomfont)
                 newx = centerX + 1.5*mw*cos(bottomangle) - mw/2.0
                 newy =  ystart
+                yoffset = mh + (mh * 2)
                 dc.SetTextForeground(bottomcolour)
                 dc.DrawText(bottomtext1, newx, newy)
 
                 mw, mh, dummy, dummy = dc.GetFullTextExtent(bottomtext2, bottomfont)
                 newx = centerX + 1.5*mw*cos(bottomangle) - mw/2.0
-                newy =  ystart + mh + (mh/2)
+                newy =  ystart + yoffset
                 dc.SetTextForeground(bottomcolour)
                 dc.DrawText(bottomtext2, newx, newy)
 
@@ -939,6 +942,8 @@ class SpeedMeter(BufferedWindow):
                 newy =  ystart
                 dc.SetTextForeground(bottomcolour)
                 dc.DrawText(bottomtext, newx, newy)
+                
+            self.bottomTextBottom = (int)(newy + mh)
 
         # Here We Draw The Icon In The Middle, Near The Start Of The Arrow (If Present)
         # This Is Like The "Fuel" Icon In The Cars                
@@ -1066,7 +1071,27 @@ class SpeedMeter(BufferedWindow):
         """ Gets The Intervals For SpeedMeter. """
         
         return self._intervals
+
+    def GetBottomTextBottom(self):
+        """
+        Gets the Y position of the bottom of the BottomText.
+        Used to position the LEDNumberCtrl if one is present.
         
+        @return: Y position of the bottom of the BottomText on the BufferedWindow (DC)
+        @rtype: int
+        """
+        
+        return self.bottomTextBottom
+
+    def GetWidth(self):
+        """
+        Gets the whole width of the SpeedMeter.
+        Used to position the LEDNumberCtrl if present.
+
+        @return: Width (px) of the whole faceBitmap
+        @rtype: int
+        """
+        return self.faceBitmap.GetWidth()
 
     def SetSpeedValue(self, value=None):
         """ Sets The Current Value For SpeedMeter. """
