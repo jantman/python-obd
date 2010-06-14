@@ -1,0 +1,25 @@
+Line 139 - Loading data file... (dieing here)
+possibly because of using dos2unix?
+
+
+
+serial_module_init()		serial.c 45
+	dzcomm_init()
+open_comport()			serial.c 70
+display_main_menu()		main_menu.c 59
+
+send_command			
+	"01{$PID}\r"
+	set timeout 9900 ms
+
+read_comport			serial.c 174
+	just read the file?
+	or loop reading one byte at a time until we reach prompt?
+
+	we should know how many bytes to read for each PID...
+	
+	RPM: 010C, 2 bytes (should have 2 byte header "41 0C", total 4 bytes)
+
+	RPM formula: sprintf(buf, "%i rpm", (int)((float)data/4)); (sensors.c L1064)
+
+	

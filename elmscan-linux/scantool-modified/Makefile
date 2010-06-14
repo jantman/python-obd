@@ -1,0 +1,101 @@
+#
+# Required libraries:
+#   allegro - http://www.talula.demon.co.uk/allegro/
+#   dzcomm  - http://dzcomm.sourceforge.net/
+#
+# To build for Linux, use "make LINUX=1".
+
+CC = gcc
+
+ifdef DEBUGMODE
+   CFLAGS = -g -Wall
+   AL_LIBS = `allegro-config --cflags --libs`
+   DEFINES = -DDEBUG
+else
+ifdef RELEASE
+   CFLAGS = -Wall -Os -fexpensive-optimizations -s
+#   AL_LIBS = -lalleg
+  AL_LIBS = `allegro-config --cflags --libs`
+else
+   CFLAGS = -O -Wall
+#   AL_LIBS = -lalleg
+  AL_LIBS = `allegro-config --cflags --libs`
+
+endif
+endif
+
+ifdef MINGDIR
+   ifdef STATICLINK
+      LIBS = $(AL_LIBS)_s -lkernel32 -luser32 -lgdi32 -lcomdlg32 -lole32 -ldinput -lddraw -ldxguid -lwinmm -ldsound
+      DEFINES += -DALLEGRO_STATICLINK
+   else
+      LIBS = $(AL_LIBS)
+   endif
+   WINDRES = windres -I rc -O coff
+   CFLAGS += -mwindows
+   OBJ = scantool.res
+   EXT = .exe
+else
+   LIBS = -ldzcom $(AL_LIBS)
+   EXT = .exe
+endif
+
+ifdef LINUX
+   LIBS += -L/usr/X11R6/lib -lX11 -lXext -lXpm -ldl -lpthread -lm
+   EXT =
+endif
+
+ifndef NOWERROR
+   CFLAGS += -Werror
+endif
+
+ifdef DEFINES
+   CFLAGS += $(DEFINES)
+endif
+
+OBJ += main.o main_menu.o serial.o options.o sensors.o trouble_code_reader.o custom_gui.o error_handlers.o about.o reset.o
+BIN = ScanTool$(EXT)
+
+ifdef MINGDIR
+endif
+
+$(BIN): $(OBJ)
+	$(CC) $(CFLAGS) -o $(BIN) $(OBJ) $(LIBS)
+
+all: $(BIN)
+
+clean:
+	rm -f $(OBJ)
+
+veryclean: clean
+	rm -f $(BIN)
+
+scantool.res: scantool.rc scantool.ico
+	windres -O coff -o scantool.res -i scantool.rc
+
+main.o: main.c globals.h main_menu.h error_handlers.h options.h serial.h
+	$(CC) $(CFLAGS) -c main.c
+
+main_menu.o: main_menu.c globals.h about.h trouble_code_reader.h sensors.h options.h serial.h custom_gui.h main_menu.h
+	$(CC) $(CFLAGS) -c main_menu.c
+
+serial.o: serial.c globals.h serial.h
+	$(CC) $(CFLAGS) -c serial.c
+
+options.o: options.c globals.h custom_gui.h serial.h options.h
+	$(CC) $(CFLAGS) -c options.c
+
+sensors.o: sensors.c globals.h serial.h options.h error_handlers.h sensors.h
+	$(CC) $(CFLAGS) -c sensors.c
+
+trouble_code_reader.o: trouble_code_reader.c globals.h serial.h options.h custom_gui.h error_handlers.h trouble_code_reader.h
+	$(CC) $(CFLAGS) -c trouble_code_reader.c
+
+custom_gui.o: custom_gui.c globals.h custom_gui.h
+	$(CC) $(CFLAGS) -c custom_gui.c
+
+error_handlers.o: error_handlers.c globals.h serial.h error_handlers.h
+	$(CC) $(CFLAGS) -c error_handlers.c
+
+about.o: about.c globals.h custom_gui.h about.h
+	$(CC) $(CFLAGS) -c about.c
