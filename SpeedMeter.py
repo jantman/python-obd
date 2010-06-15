@@ -391,6 +391,7 @@ class SpeedMeter(BufferedWindow):
         self.SetSecondGradientColour()
         self.SetHandStyle()
         self.DrawExternalArc()
+        self.DrawExternalCircle()
         
         BufferedWindow.__init__(self, parent, id, pos, size,
                                 style=wx.NO_FULL_REPAINT_ON_RESIZE,
@@ -863,7 +864,7 @@ class SpeedMeter(BufferedWindow):
         # Draw The External Arc
         dc.SetBrush(wx.TRANSPARENT_BRUSH)
 
-        if self._drawarc:
+        if self._drawarc and not self._drawfullarc:
             dc.SetPen(wx.Pen(self.GetArcColour(), 2.0))
             # If It's Not A Complete Circle, Draw The Connecting Lines And The Arc       
             if abs(abs(startangle - endangle) - 2*pi) > 1.0/180.0:
@@ -873,6 +874,9 @@ class SpeedMeter(BufferedWindow):
             else:
                 # Draw A Circle, Is A 2*pi Extension Arc = Complete Circle
                 dc.DrawCircle(centerX, centerY, radius)
+
+        if self._drawfullarc:
+            dc.DrawCircle(centerX, centerY, radius)
 
     
         # Here We Draw The Text In The Middle, Near The Start Of The Arrow (If Present)
@@ -1566,6 +1570,15 @@ class SpeedMeter(BufferedWindow):
         
         self._drawarc = draw
 
+    def DrawExternalCircle(self, draw=False):
+        """
+        Specify Wheter Or Not You Wish To Draw The External (Thicker) Arc as a full circle.
+
+        @param draw: boolean, whether or not to draw the full circle
+        @type draw: C{boolean}
+        """
+        
+        self._drawfullarc = draw
 
     def OnMouseMotion(self, event):
         """ Handles The Mouse Events.

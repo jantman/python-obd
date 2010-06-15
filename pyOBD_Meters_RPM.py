@@ -12,6 +12,8 @@ import wx
 import SpeedMeter as SM
 from math import pi, sqrt
 import wx.gizmos as gizmos
+from pyOBD_Meters_Constants import pyOBD_Meters_Constants as CONST
+
 
 """
 @todo: need to modify speed meter for bottom and/or top text
@@ -44,7 +46,7 @@ class pyOBD_Meters_RPM():
         # SM_DRAW_MIDDLE_TEXT: We Draw Some Text In The Center Of SpeedMeter
         # SM_ROTATE_TEXT: The Ticks Texts Are Rotated Accordingly To Their Angle
         
-        self.SpeedWindow5 = SM.SpeedMeter(myPanel,
+        self.GaugeWindow = SM.SpeedMeter(myPanel,
                                           extrastyle=SM.SM_DRAW_HAND |
                                           SM.SM_DRAW_PARTIAL_SECTORS |
                                           SM.SM_DRAW_SECONDARY_TICKS |
@@ -52,41 +54,40 @@ class pyOBD_Meters_RPM():
                                           )
 
         # We Want To Simulate The Round Per Meter Control In A Car
-        self.SpeedWindow5.SetAngleRange(-pi/6, 7*pi/6)
+        self.GaugeWindow.SetAngleRange(-pi/6, 7*pi/6)
 
         intervals = range(0, 5)
-        self.SpeedWindow5.SetIntervals(intervals)
+        self.GaugeWindow.SetIntervals(intervals)
 
-        colours = [wx.BLACK]*2
-        colours.append(wx.Colour(255, 255, 0))
+        colours = [CONST.M_LARGE_BG_COLOR]*3
         colours.append(wx.RED)
-        print len(intervals)
-        print len(colours)
-        self.SpeedWindow5.SetIntervalColours(colours)
+        self.GaugeWindow.SetIntervalColours(colours)
 
         ticks = [str(interval) for interval in intervals]
-        self.SpeedWindow5.SetTicks(ticks)
-        self.SpeedWindow5.SetTicksColour(wx.WHITE)
-        self.SpeedWindow5.SetTicksFont(wx.Font(7, wx.SWISS, wx.NORMAL, wx.NORMAL))
+        self.GaugeWindow.SetTicks(ticks)
+        self.GaugeWindow.SetTicksColour(CONST.M_LARGE_TICK_COLOR)
+        self.GaugeWindow.SetTicksFont(wx.Font(7, wx.SWISS, wx.NORMAL, wx.NORMAL))
 
-        self.SpeedWindow5.SetHandColour(wx.Colour(255, 50, 0))
+        self.GaugeWindow.SetHandColour(wx.Colour(255, 50, 0))
 
-        self.SpeedWindow5.SetSpeedBackground(wx.SystemSettings_GetColour(0))        
+        self.GaugeWindow.SetSpeedBackground(CONST.M_LARGE_BG_COLOR)
 
-        self.SpeedWindow5.DrawExternalArc(False)
+        """@todo: this doesn't seem to be working."""
+        self.GaugeWindow.SetArcColour(CONST.M_LARGE_ARC_COLOR)
+        self.GaugeWindow.DrawExternalCircle(True)
 
-        self.SpeedWindow5.SetShadowColour(wx.Colour(50, 50, 50))
+        self.GaugeWindow.SetShadowColour(wx.Colour(50, 0, 0))
 
-        #self.SpeedWindow5.SetMiddleText("rpm")
-        #self.SpeedWindow5.SetMiddleTextColour(wx.WHITE)
-        #self.SpeedWindow5.SetMiddleTextFont(wx.Font(8, wx.SWISS, wx.NORMAL, wx.BOLD))
+        #self.GaugeWindow.SetMiddleText("rpm")
+        #self.GaugeWindow.SetMiddleTextColour(wx.WHITE)
+        #self.GaugeWindow.SetMiddleTextFont(wx.Font(8, wx.SWISS, wx.NORMAL, wx.BOLD))
         self.staticText = "RPM x1000"
-        self.SpeedWindow5.SetBottomText(self.staticText)
-        self.SpeedWindow5.SetBottomTextColour(wx.WHITE)
-        self.SpeedWindow5.SetBottomTextFont(wx.Font(8, wx.SWISS, wx.NORMAL, wx.BOLD))
-        self.SpeedWindow5.SetSpeedBackground(wx.Colour(160, 160, 160)) 
+        self.GaugeWindow.SetBottomText(self.staticText)
+        self.GaugeWindow.SetBottomTextColour(CONST.M_LARGE_TEXT_COLOR)
+        self.GaugeWindow.SetBottomTextFont(wx.Font(8, wx.SWISS, wx.NORMAL, wx.BOLD))
+        self.GaugeWindow.SetSpeedBackground(CONST.M_LARGE_BG_COLOR) 
         
-        self.SpeedWindow5.SetSpeedValue(.68)
+        self.GaugeWindow.SetSpeedValue(.68)
 
     def getSpeedWindow(self):
         """
@@ -94,7 +95,7 @@ class pyOBD_Meters_RPM():
         @return: SpeedMeter
         @rtype: L{SpeedMeter}
         """
-        return self.SpeedWindow5
+        return self.GaugeWindow
 
     def SetText(self, text=None):
         """
@@ -106,7 +107,7 @@ class pyOBD_Meters_RPM():
         if text is None:
             text = ""
 
-        self.SpeedWindow5._middletext = text
+        self.GaugeWindow._middletext = text
 
     def SetValue(self, value=None):
         """
@@ -120,15 +121,16 @@ class pyOBD_Meters_RPM():
             return
         else:
             self.currentValue = value
-            self.SpeedWindow5.SetSpeedValue(value)
+            self.GaugeWindow.SetSpeedValue(value)
             
             if self.led is None:
                 # LED number control
-                pos = (self.SpeedWindow5.GetWidth()/2 - 60, self.SpeedWindow5.GetBottomTextBottom())
+                pos = (self.GaugeWindow.GetWidth()/2 - 60, self.GaugeWindow.GetBottomTextBottom())
                 size = (120, 30)
-                style = gizmos.LED_ALIGN_CENTER | wx.DOUBLE_BORDER #wx.NO_BORDER
+                style = gizmos.LED_ALIGN_CENTER | wx.NO_BORDER
                 self.led = gizmos.LEDNumberCtrl(self.getSpeedWindow(), -1, pos, size, style)
-                #self.led.SetBackgroundColour(self.SpeedWindow5.GetSpeedBackground())
+                self.led.SetBackgroundColour(CONST.M_LARGE_BG_COLOR)
+                self.led.SetForegroundColour(CONST.M_LARGE_LED_COLOR)
                 print self.led.GetBorder()
                 print wx.NO_BORDER
 
