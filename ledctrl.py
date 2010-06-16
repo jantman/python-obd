@@ -64,43 +64,6 @@ class ledctrl(BufferedWindow):
                                 bufferedstyle=bufferedstyle)
 
 
-        """
-        wxLEDNumberCtrl::wxLEDNumberCtrl(wxWindow *parent, wxWindowID id,
-        const wxPoint& pos, const wxSize& size,
-        long style)
-        :   m_Alignment(wxLED_ALIGN_LEFT),
-        m_LineMargin(-1),
-        m_DigitMargin(-1),
-        m_LineLength(-1),
-        m_LineWidth(-1),
-        m_DrawFaded(false),
-        m_LeftStartPos(-1)
-        {
-        Create(parent, id, pos, size, style);
-        }
-        """
-
-        """
-bool wxLEDNumberCtrl::Create(wxWindow *parent, wxWindowID id,
-                                 const wxPoint& pos, const wxSize& size,
-                                 long style)
-{
-    bool RetVal = wxControl::Create(parent, id, pos, size, style);
-
-    if ((style & wxLED_DRAW_FADED) != 0)
-        SetDrawFaded(true);
-    if ((style & wxLED_ALIGN_MASK) != 0)
-        SetAlignment((wxLEDValueAlign)(style & wxLED_ALIGN_MASK));
-
-    SetBackgroundColour(*wxBLACK);
-    SetForegroundColour(*wxGREEN);
-
-    return RetVal;
-}
-
-        """
-        print "done init" # DEBUG
-
     def SetAlignment(self, Alignment=None, Redraw=False):
         """
         Sets LED digit alignment.

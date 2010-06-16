@@ -51,9 +51,12 @@ class pyOBD_Meters_RPM():
                                           extrastyle=SM.SM_DRAW_HAND |
                                           SM.SM_DRAW_PARTIAL_SECTORS |
                                           SM.SM_DRAW_SECONDARY_TICKS |
-                                          SM.SM_DRAW_BOTTOM_TEXT
+                                          SM.SM_DRAW_BOTTOM_TEXT |
+                                          SM.SM_DRAW_BOTTOM_LED
                                           )
 
+        self.GaugeWindow.SetValueMultiplier(1000)
+        self.GaugeWindow.SetLEDAlignment(gizmos.LED_ALIGN_CENTER)
         # We Want To Simulate The Round Per Meter Control In A Car
         self.GaugeWindow.SetAngleRange(-pi/6, 7*pi/6)
 
@@ -131,12 +134,12 @@ class pyOBD_Meters_RPM():
                 style = gizmos.LED_ALIGN_CENTER | wx.NO_BORDER
                 
                 #self.led = gizmos.LEDNumberCtrl(self.getSpeedWindow(), -1, pos, size, style)
-                self.led = LEDControl(self.getSpeedWindow(), -1, pos, size, style)
+                #self.led = LEDControl(self.getSpeedWindow(), -1, pos, size, style)
                 #self.led.SetBackgroundColour(CONST.M_LARGE_BG_COLOR)
-                self.led.SetBackgroundColour(wx.Colour(0, 0, 0, 255))
-                self.led.SetForegroundColour(CONST.M_LARGE_LED_COLOR)
+                #self.led.SetBackgroundColour(wx.Colour(0, 0, 0, 255))
+                #self.led.SetForegroundColour(CONST.M_LARGE_LED_COLOR)
 
-            self.led.SetValue(str(int(value*1000)))
+            #self.led.SetValue(str(int(value*1000)))
 
     def GetValue(self):
         """
