@@ -109,6 +109,7 @@ import wx
 import wx.lib.colourdb
 import wx.lib.fancytext as fancytext
 import wx.gizmos as gizmos # for LEDControl
+import exceptions
 
 from math import pi, sin, cos, log, sqrt, atan2
 
@@ -328,8 +329,10 @@ class SpeedMeter(BufferedWindow):
     @todo: Need to document everything (all methods).
     @todo: Build example code.
     @todo: Find everything used internally only and prefix methods with "__"
-    @todo: Find all "raise" statements, and any "print" statements that print an error, make them work with exceptions
+    @todo: Find all "raise" statements, and any "print" statements that print an error, make them work with exceptions - IndexError, TypeError, RuntimeError, LookupError
     @todo: change all mentions of "hand" to "needle"
+    @todo: make sure we have setters/getters for DrawFaded, Alignment, Value (for LED)
+    @todo: in client, test gradients
     
     """
 
@@ -1194,13 +1197,11 @@ class SpeedMeter(BufferedWindow):
             value = (max(self._intervals) - min(self._intervals))/2.0
         else:
             if not (isinstance(value, int) or isinstance(value, float)):
-                raise "\nERROR: Value must be of int or float type, not " + str(type(value))
+                raise TypeError("value parameter of SetSpeedValue must be of int or float type, not " + str(type(value)))
             if value < min(self._intervals):
-                raise "\nERROR: Value Is Smaller Than Minimum Element In Points List"
-                return
+                raise IndexError("value parameter of SetSpeedValue is smaller than the minimum element in the points (intervals) list")
             elif value > max(self._intervals):
-                raise "\nERROR: Value Is Greater Than Maximum Element In Points List"
-                return
+                raise IndexError("value parameter of SetSpeedValue Greater Than Maximum Element In Points List")
             
         self._speedvalue = value
         self._speedStr = str(int(value * self._ValueMultiplier))

@@ -1,6 +1,6 @@
 # -*- coding: iso-8859-1 -*-
 # TuxTruck Main Frame - This is the root of everything, called from the App in main.py
-# Time-stamp: "2010-06-16 16:13:34 jantman"
+# Time-stamp: "2010-06-16 16:36:48 jantman"
 # $LastChangedRevision$
 # $HeadURL$
 #
@@ -531,7 +531,6 @@ class pyOBD_Main(wx.Frame):
             self.SpeedWindow2.SetValue(3.80)
         else:
             self.SpeedWindow2.SetValue(.68)
-            self.SpeedWindow2.SetValue("hello")
 
         btn = event.GetEventObject()
         
