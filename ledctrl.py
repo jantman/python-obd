@@ -114,50 +114,18 @@ bool wxLEDNumberCtrl::Create(wxWindow *parent, wxWindowID id,
             m_DrawFaded = DrawFaded
             if Redraw:
                 Refresh(False)
-# TODO - DEBUG - LEFT OFF HERE
-# open next to the SpeedMeter class, take some clues from there.
 
-void wxLEDNumberCtrl::SetValue(wxString const &Value, bool Redraw)
-{
-    if (Value != m_Value)
-    {
-#ifdef __WXDEBUG__
-        if (!Value.empty())
-        {
-            for(size_t i=0; i<Value.Length(); i++) {
-                wxChar ch = Value[i];
-                wxASSERT_MSG((ch>='0' && ch<='9') || ch=='-' || ch==' ' || ch=='.',
-                             wxT("wxLEDNumberCtrl can only display numeric string values."));
-            }
-        }
-#endif
+    def OnPaint(self):
+        """
+        void wxLEDNumberCtrl::OnPaint(wxPaintEvent &WXUNUSED(event))
+        """
 
-        m_Value = Value;
-        RecalcInternals(GetClientSize());
-
-        if (Redraw)
-            Refresh(false);
-    }
-}
-
-
-BEGIN_EVENT_TABLE(wxLEDNumberCtrl, wxControl)
-    EVT_ERASE_BACKGROUND(wxLEDNumberCtrl::OnEraseBackground)
-    EVT_PAINT(wxLEDNumberCtrl::OnPaint)
-    EVT_SIZE(wxLEDNumberCtrl::OnSize)
-END_EVENT_TABLE()
-
-
-void wxLEDNumberCtrl::OnEraseBackground(wxEraseEvent &WXUNUSED(event))
-{
-}
-
-
-void wxLEDNumberCtrl::OnPaint(wxPaintEvent &WXUNUSED(event))
-{
+        dc = wx.PaintDC(self)
     wxPaintDC Dc(this);
 
     int Width, Height;
+
+
     GetClientSize(&Width, &Height);
 
     wxBitmap *pMemoryBitmap = new wxBitmap(Width, Height);
@@ -234,6 +202,49 @@ void wxLEDNumberCtrl::OnPaint(wxPaintEvent &WXUNUSED(event))
     Dc.Blit(0, 0, Width, Height, &MemDc, 0, 0, wxCOPY);
     delete pMemoryBitmap;
 }
+
+
+
+# TODO - DEBUG - LEFT OFF HERE
+# open next to the SpeedMeter class, take some clues from there.
+
+void wxLEDNumberCtrl::SetValue(wxString const &Value, bool Redraw)
+{
+    if (Value != m_Value)
+    {
+#ifdef __WXDEBUG__
+        if (!Value.empty())
+        {
+            for(size_t i=0; i<Value.Length(); i++) {
+                wxChar ch = Value[i];
+                wxASSERT_MSG((ch>='0' && ch<='9') || ch=='-' || ch==' ' || ch=='.',
+                             wxT("wxLEDNumberCtrl can only display numeric string values."));
+            }
+        }
+#endif
+
+        m_Value = Value;
+        RecalcInternals(GetClientSize());
+
+        if (Redraw)
+            Refresh(false);
+    }
+}
+
+
+BEGIN_EVENT_TABLE(wxLEDNumberCtrl, wxControl)
+    EVT_ERASE_BACKGROUND(wxLEDNumberCtrl::OnEraseBackground)
+    EVT_PAINT(wxLEDNumberCtrl::OnPaint)
+    EVT_SIZE(wxLEDNumberCtrl::OnSize)
+END_EVENT_TABLE()
+
+
+void wxLEDNumberCtrl::OnEraseBackground(wxEraseEvent &WXUNUSED(event))
+{
+}
+
+
+
 
 
 void wxLEDNumberCtrl::DrawDigit(wxDC &Dc, int Digit, int Column)
