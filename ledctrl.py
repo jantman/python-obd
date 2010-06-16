@@ -9,11 +9,15 @@ Pure Python rewrite of the wxCode.gadgets.ledctrl class
 """
 
 import wx
+from SpeedMeter import BufferedWindow as BufferedWindow
+import wx.gizmos as gizmos
 
 class ledctrl(BufferedWindow):
     """
     Creates a LEDctrl object
     """
+
+    DEBUG = True
 
     LINE1 = 1
     LINE2 = 2
@@ -48,9 +52,17 @@ class ledctrl(BufferedWindow):
 
         """
 
+        self._bufferedstyle = bufferedstyle
+        self.SetBackgroundColour()
+        self.SetValue()
+        self.SetAlignment()
+        self.SetDrawFaded()
+        self.InitInternals()
+
         BufferedWindow.__init__(self, parent, id, pos, size,
                                 style=wx.NO_FULL_REPAINT_ON_RESIZE,
                                 bufferedstyle=bufferedstyle)
+
 
         """
         wxLEDNumberCtrl::wxLEDNumberCtrl(wxWindow *parent, wxWindowID id,
@@ -89,7 +101,7 @@ bool wxLEDNumberCtrl::Create(wxWindow *parent, wxWindowID id,
         """
         print "done init" # DEBUG
 
-    def SetAlignment(self, Alignment, Redraw):
+    def SetAlignment(self, Alignment=None, Redraw=False):
         """
         Sets LED digit alignment.
         
@@ -97,297 +109,298 @@ bool wxLEDNumberCtrl::Create(wxWindow *parent, wxWindowID id,
         @type Alignment: wxLEDValueAlign
         @type Redraw: C{boolean}
         """
-        
-        if Alignment != m_Alignment:
-            m_Alignment = Alignment
-            RecalcInternals(GetClientSize())
+        if Alignment is None:
+            self._Alignment = Alignment
+
+        if Alignment != self._Alignment:
+            self._Alignment = Alignment
+            RecalcInternals(self.GetClientSize())
             if Redraw:
                 Refresh(false)
                 
-    def SetDrawFaded(self, DrawFaded, Redraw):
+    def SetDrawFaded(self, DrawFaded=None, Redraw=False):
         """
         @type DrawFaded: C{boolean}
         @type Redraw: C{boolean}
         """
 
-        if DrawFaded != m_DrawFaded:
-            m_DrawFaded = DrawFaded
+        if DrawFaded is None:
+            self._DrawFaded = DrawFaded
+
+        if DrawFaded != self._DrawFaded:
+            self._DrawFaded = DrawFaded
             if Redraw:
                 Refresh(False)
 
-    def OnPaint(self):
+    def SetValue(self, value=None):
+        """ Sets The Current Value For SpeedMeter. """
+
+        print value
+        if value is None:
+            self._value = ""
+        elif value != self._value:
+            self._value = value
+            self.RecalcInternals(self.GetClientSize())
+            try:
+                self.UpdateDrawing()
+            except:
+                pass
+
+    def SetBackgroundColour(self, colour=None):
+        """ Sets The Background Colour Outside The SpeedMeter Control."""
+        
+        if colour is None:
+            colour = wx.SystemSettings_GetColour(0)
+
+        self._backgroundcolour = colour
+
+    def GetBackgroundColour(self):
+        """ Gets The Background Colour Outside The SpeedMeter Control."""
+
+        return self._backgroundcolour
+
+    def Draw(self, dc):
+        """ Draws Everything On The Empty Bitmap.
+
+        Here All The Chosen Styles Are Applied. """
+
+        size = self.GetClientSize()
+        Width = size.x
+        Height = size.y
+
+        self.RecalcInternals(size)
+
+        new_dim = size.Get()
+        
+        if not hasattr(self, "dim"):
+            self.dim = new_dim
+
+        self.faceBitmap = wx.EmptyBitmap(size.width, size.height)
+        
+        dc.BeginDrawing()
+
+        #wxBitmap *pMemoryBitmap = new wxBitmap(Width, Height);
+        #wxMemoryDC MemDc;
+        #MemDc.SelectObject(*pMemoryBitmap);
+
+        
+        # Draw background.
+
+        #background = self.GetBackgroundColour()
+        #dc.SetBackground(wx.Brush(background))
+        # BEGIN SEBUG
+        dc.SetBackgroundMode(wx.TRANSPARENT)
+        dc.SetBackground(wx.Brush(wx.Colour(255, 255, 255), wx.TRANSPARENT))
+        # END DEBUG
+        dc.Clear()
+
+        #c.SetBrush(wxBrush(GetBackgroundColour(), wxSOLID));
+        #MemDc.DrawRectangle(wxRect(0, 0, size.width, size.height));
+        #MemDc.SetBrush(wxNullBrush);
+
+        # Iterate each digit in the value, and draw.
+        for i in range(len(self._value)):
+            c = self._value[i]
+
+            if self.DEBUG:
+                print "Digit Number: " + str(i)
+                print "Drawing Digit: " + c
+
+            # Draw faded lines if wanted.
+            if self._DrawFaded and (c != '.'):
+                self.DrawDigit(dc, self.DIGITALL, i)
+                
+            # Draw the digits.
+            if c == '0':
+                self.DrawDigit(dc, self.DIGIT0, i)
+            elif c == '1':
+                self.DrawDigit(dc, self.DIGIT1, i)
+            elif c == '2':
+                self.DrawDigit(dc, self.DIGIT2, i)
+            elif c == '3':
+                self.DrawDigit(dc, self.DIGIT3, i)
+            elif c == '4':
+                self.DrawDigit(dc, self.DIGIT4, i)
+            elif c == '5':
+                self.DrawDigit(dc, self.DIGIT5, i)
+            elif c == '6':
+                self.DrawDigit(dc, self.DIGIT6, i)
+            elif c == '7':
+                self.DrawDigit(dc, self.DIGIT7, i)
+            elif c == '8':
+                self.DrawDigit(dc, self.DIGIT8, i)
+            elif c == '9':
+                self.DrawDigit(dc, self.DIGIT9, i)
+            elif c == '-':
+                self.DrawDigit(dc, self.DASH, i)
+            elif c == '.':
+                self.DrawDigit(dc, self.DECIMALSIGN, (i-1))
+            elif c == ' ':
+                # skip this
+                pass
+            else:
+                print "Error: Undefined Digit Value: " + c
+                
+            """
+            { '0' : self.DrawDigit(dc, self.DIGIT0, i),
+              '1' : self.DrawDigit(dc, self.DIGIT1, i),
+              '2' : self.DrawDigit(dc, self.DIGIT2, i),
+              '3' : self.DrawDigit(dc, self.DIGIT3, i),
+              '4' : self.DrawDigit(dc, self.DIGIT4, i),
+              '5' : self.DrawDigit(dc, self.DIGIT5, i),
+              '6' : self.DrawDigit(dc, self.DIGIT6, i),
+              '7' : self.DrawDigit(dc, self.DIGIT7, i),
+              '8' : self.DrawDigit(dc, self.DIGIT8, i),
+              '9' : self.DrawDigit(dc, self.DIGIT9, i),
+              '-' : self.DrawDigit(dc, self.DASH, i),
+              '.' : self.DrawDigit(dc, self.DECIMALSIGN, (i-1))}[c]()
+            """
+            # case _T(' ') :   break; (skip this)
+            # undefined case: error message "Unknown digit value"
+
+        #dc.EndDrawing()
+        # Blit the memory dc to screen.
+        #Dc.Blit(0, 0, Width, Height, &MemDc, 0, 0, wxCOPY);
+        #delete pMemoryBitmap;
+
+    def DrawDigit(self, dc, Digit, Column):
         """
-        void wxLEDNumberCtrl::OnPaint(wxPaintEvent &WXUNUSED(event))
+
+        """
+        
+        LineColor = self.GetForegroundColour()
+
+        if Digit == self.DIGITALL:
+            R = LineColor.Red() / 16
+            G = LineColor.Green() / 16
+            B = LineColor.Blue() / 16
+            LineColor = wx.Colour(R, G, B)
+
+        XPos = self._LeftStartPos + (Column * (self._LineLength + self._DigitMargin))
+
+        # Create a pen and draw the lines.
+        Pen = wx.Pen(LineColor, self._LineWidth, wx.SOLID)
+        dc.SetPen(Pen)
+
+        if Digit & self.LINE1:
+            dc.DrawLine(XPos + self._LineMargin*2, self._LineMargin, 
+                        XPos + self._LineLength + self._LineMargin*2, self._LineMargin)
+            if self.DEBUG:
+                print "Line1"
+
+        if Digit & self.LINE2:
+            dc.DrawLine(XPos + self._LineLength + self._LineMargin*3, 
+                        self._LineMargin*2, XPos + self._LineLength + self._LineMargin*3, 
+                        self._LineLength + (self._LineMargin*2))
+            if self.DEBUG:
+                print "Line2"
+
+        if Digit & self.LINE3:
+            dc.DrawLine(XPos + self._LineLength + self._LineMargin*3, self._LineLength + (self._LineMargin*4),
+                        XPos + self._LineLength + self._LineMargin*3, self._LineLength*2 + (self._LineMargin*4))
+            if self.DEBUG:
+                print "Line3"
+
+        if Digit & self.LINE4:
+            dc.DrawLine(XPos + self._LineMargin*2, self._LineLength*2 + (self._LineMargin*5),
+                        XPos + self._LineLength + self._LineMargin*2, self._LineLength*2 + (self._LineMargin*5))
+            if self.DEBUG:
+                print "Line4"
+
+        if Digit & self.LINE5:
+            dc.DrawLine(XPos + self._LineMargin, self._LineLength + (self._LineMargin*4),
+                        XPos + self._LineMargin, self._LineLength*2 + (self._LineMargin*4))
+            if self.DEBUG:
+                print "Line5"
+
+        if Digit & self.LINE6:
+            dc.DrawLine(XPos + self._LineMargin, self._LineMargin*2,
+                        XPos + self._LineMargin, self._LineLength + (self._LineMargin*2))
+            if self.DEBUG:
+                print "Line6"
+
+        if Digit & self.LINE7:
+            dc.DrawLine(XPos + self._LineMargin*2, self._LineLength + (self._LineMargin*3),
+                        XPos + self._LineMargin*2 + self._LineLength, self._LineLength + (self._LineMargin*3))
+            if self.DEBUG:
+                print "Line7"
+
+        if Digit & self.DECIMALSIGN:
+            dc.DrawLine(XPos + self._LineLength + self._LineMargin*4, self._LineLength*2 + (self._LineMargin*5),
+                        XPos + self._LineLength + self._LineMargin*4, self._LineLength*2 + (self._LineMargin*5))
+            if self.DEBUG:
+                print "Line DecimalSign"
+
+        #Dc.SetPen(wxNullPen);
+
+    def RecalcInternals(self, CurrentSize):
+        """
+        Dimensions of LED segments
+        
+        Size of character is based on the HEIGH of the widget, NOT the width.
+        Segment height is calculated as follows:
+        Each segment is m_LineLength pixels long.
+        There is m_LineMargin pixels at the top and bottom of each line segment
+        There is m_LineMargin pixels at the top and bottom of each digit
+        
+        Therefore, the heigth of each character is:
+        m_LineMargin                            : Top digit boarder
+        m_LineMargin+m_LineLength+m_LineMargin  : Top half of segment
+        m_LineMargin+m_LineLength+m_LineMargin  : Bottom half of segment
+        m_LineMargin                            : Bottom digit boarder
+        ----------------------
+        m_LineMargin*6 + m_LineLength*2 == Total height of digit.
+        Therefore, (m_LineMargin*6 + m_LineLength*2) must equal Height
+        
+        Spacing between characters can then be calculated as follows:
+        m_LineMargin                            : before the digit,
+        m_LineMargin+m_LineLength+m_LineMargin  : for the digit width
+        m_LineMargin                            : after the digit
+        = m_LineMargin*4 + m_LineLength
+        """
+        Height = CurrentSize.GetHeight()
+
+        if (Height * 0.075) < 1:
+            self._LineMargin = 1
+        else:
+            self._LineMargin = int(Height * 0.075)
+
+        if (Height * 0.275) < 1:
+            self._LineLength = 1
+        else:
+            self._LineLength = int(Height * 0.275)
+
+        self._LineWidth = self._LineMargin
+
+        self._DigitMargin = self._LineMargin * 4
+
+        # Count the number of characters in the string; '.' characters are not
+        # included because they do not take up space in the display
+        count = 0;
+        for char in self._value:
+            if char != '.':
+                count = count + 1
+
+        ValueWidth = (self._LineLength + self._DigitMargin) * count
+        ClientWidth = CurrentSize.GetWidth()
+
+        if self._Alignment == gizmos.LED_ALIGN_LEFT:
+            self._LeftStartPos = self._LineMargin
+        elif self._Alignment == gizmos.LED_ALIGN_RIGHT:
+            self._LeftStartPos = ClientWidth - ValueWidth - self._LineMargin
+        else:
+            # self._Alignment == gizmos.LED_ALIGN_CENTER:
+            # centered is the default
+            self._LeftStartPos = (ClientWidth - ValueWidth) / 2
+
+    def InitInternals(self):
         """
 
-        dc = wx.PaintDC(self)
-    wxPaintDC Dc(this);
-
-    int Width, Height;
-
-
-    GetClientSize(&Width, &Height);
-
-    wxBitmap *pMemoryBitmap = new wxBitmap(Width, Height);
-    wxMemoryDC MemDc;
-
-    MemDc.SelectObject(*pMemoryBitmap);
-
-    // Draw background.
-    MemDc.SetBrush(wxBrush(GetBackgroundColour(), wxSOLID));
-    MemDc.DrawRectangle(wxRect(0, 0, Width, Height));
-    MemDc.SetBrush(wxNullBrush);
-
-    // Iterate each digit in the value, and draw.
-    const int DigitCount = m_Value.Len();
-    for (int offset=0, i = 0; offset < DigitCount; ++offset, ++i)
-    {
-        wxChar c = m_Value.GetChar(offset);
-
-        // Draw faded lines if wanted.
-        if (m_DrawFaded && (c != _T('.')))
-            DrawDigit(MemDc, DIGITALL, i);
-
-        // Draw the digits.
-        switch (c)
-        {
-            case _T('0') :
-                DrawDigit(MemDc, DIGIT0, i);
-                break;
-            case _T('1') :
-                DrawDigit(MemDc, DIGIT1, i);
-                break;
-            case _T('2') :
-                DrawDigit(MemDc, DIGIT2, i);
-                break;
-            case _T('3') :
-                DrawDigit(MemDc, DIGIT3, i);
-                break;
-            case _T('4') :
-                DrawDigit(MemDc, DIGIT4, i);
-                break;
-            case _T('5') :
-                DrawDigit(MemDc, DIGIT5, i);
-                break;
-            case _T('6') :
-                DrawDigit(MemDc, DIGIT6, i);
-                break;
-            case _T('7') :
-                DrawDigit(MemDc, DIGIT7, i);
-                break;
-            case _T('8') :
-                DrawDigit(MemDc, DIGIT8, i);
-                break;
-            case _T('9') :
-                DrawDigit(MemDc, DIGIT9, i);
-                break;
-            case _T('-') :
-                DrawDigit(MemDc, DASH, i);
-                break;
-            case _T('.') :
-                // Display the decimal in the previous segment
-                i--;
-                DrawDigit(MemDc, DECIMALSIGN, i);
-                break;
-            case _T(' ') :
-                // just skip it
-                break;
-            default :
-                wxFAIL_MSG(wxT("Unknown digit value"));
-                break;
-        }
-    }
-
-    // Blit the memory dc to screen.
-    Dc.Blit(0, 0, Width, Height, &MemDc, 0, 0, wxCOPY);
-    delete pMemoryBitmap;
-}
+        """
+        self._LineMargin = None
+        self._LineLength = None
+        self._LineWidth = None
+        self._DigitMargin = None
+        self._LeftStartPos = None
 
 
-
-# TODO - DEBUG - LEFT OFF HERE
-# open next to the SpeedMeter class, take some clues from there.
-
-void wxLEDNumberCtrl::SetValue(wxString const &Value, bool Redraw)
-{
-    if (Value != m_Value)
-    {
-#ifdef __WXDEBUG__
-        if (!Value.empty())
-        {
-            for(size_t i=0; i<Value.Length(); i++) {
-                wxChar ch = Value[i];
-                wxASSERT_MSG((ch>='0' && ch<='9') || ch=='-' || ch==' ' || ch=='.',
-                             wxT("wxLEDNumberCtrl can only display numeric string values."));
-            }
-        }
-#endif
-
-        m_Value = Value;
-        RecalcInternals(GetClientSize());
-
-        if (Redraw)
-            Refresh(false);
-    }
-}
-
-
-BEGIN_EVENT_TABLE(wxLEDNumberCtrl, wxControl)
-    EVT_ERASE_BACKGROUND(wxLEDNumberCtrl::OnEraseBackground)
-    EVT_PAINT(wxLEDNumberCtrl::OnPaint)
-    EVT_SIZE(wxLEDNumberCtrl::OnSize)
-END_EVENT_TABLE()
-
-
-void wxLEDNumberCtrl::OnEraseBackground(wxEraseEvent &WXUNUSED(event))
-{
-}
-
-
-
-
-
-void wxLEDNumberCtrl::DrawDigit(wxDC &Dc, int Digit, int Column)
-{
-    wxColour LineColor(GetForegroundColour());
-
-    if (Digit == DIGITALL)
-    {
-        const unsigned char R = (unsigned char)(LineColor.Red() / 16);
-        const unsigned char G = (unsigned char)(LineColor.Green() / 16);
-        const unsigned char B = (unsigned char)(LineColor.Blue() / 16);
-
-        LineColor.Set(R, G, B);
-    }
-
-    int XPos = m_LeftStartPos + Column * (m_LineLength + m_DigitMargin);
-
-    // Create a pen and draw the lines.
-    wxPen Pen(LineColor, m_LineWidth, wxSOLID);
-    Dc.SetPen(Pen);
-
-    if ((Digit & LINE1))
-    {
-        Dc.DrawLine(XPos + m_LineMargin*2, m_LineMargin,
-            XPos + m_LineLength + m_LineMargin*2, m_LineMargin);
-    }
-
-    if (Digit & LINE2)
-    {
-        Dc.DrawLine(XPos + m_LineLength + m_LineMargin*3, m_LineMargin*2,
-            XPos + m_LineLength + m_LineMargin*3, m_LineLength + (m_LineMargin*2));
-    }
-
-    if (Digit & LINE3)
-    {
-        Dc.DrawLine(XPos + m_LineLength + m_LineMargin*3, m_LineLength + (m_LineMargin*4),
-            XPos + m_LineLength + m_LineMargin*3, m_LineLength*2 + (m_LineMargin*4));
-    }
-
-    if (Digit & LINE4)
-    {
-        Dc.DrawLine(XPos + m_LineMargin*2, m_LineLength*2 + (m_LineMargin*5),
-            XPos + m_LineLength + m_LineMargin*2, m_LineLength*2 + (m_LineMargin*5));
-    }
-
-    if (Digit & LINE5)
-    {
-        Dc.DrawLine(XPos + m_LineMargin, m_LineLength + (m_LineMargin*4),
-            XPos + m_LineMargin, m_LineLength*2 + (m_LineMargin*4));
-    }
-
-    if (Digit & LINE6)
-    {
-        Dc.DrawLine(XPos + m_LineMargin, m_LineMargin*2,
-            XPos + m_LineMargin, m_LineLength + (m_LineMargin*2));
-    }
-
-    if (Digit & LINE7)
-    {
-        Dc.DrawLine(XPos + m_LineMargin*2, m_LineLength + (m_LineMargin*3),
-            XPos + m_LineMargin*2 + m_LineLength, m_LineLength + (m_LineMargin*3));
-    }
-
-    if (Digit & DECIMALSIGN)
-    {
-        Dc.DrawLine(XPos + m_LineLength + m_LineMargin*4, m_LineLength*2 + (m_LineMargin*5),
-            XPos + m_LineLength + m_LineMargin*4, m_LineLength*2 + (m_LineMargin*5));
-    }
-
-    Dc.SetPen(wxNullPen);
-}
-
-
-void wxLEDNumberCtrl::RecalcInternals(const wxSize &CurrentSize)
-{
-    // Dimensions of LED segments
-    //
-    // Size of character is based on the HEIGH of the widget, NOT the width.
-    // Segment height is calculated as follows:
-    // Each segment is m_LineLength pixels long.
-    // There is m_LineMargin pixels at the top and bottom of each line segment
-    // There is m_LineMargin pixels at the top and bottom of each digit
-    //
-    //  Therefore, the heigth of each character is:
-    //  m_LineMargin                            : Top digit boarder
-    //  m_LineMargin+m_LineLength+m_LineMargin  : Top half of segment
-    //  m_LineMargin+m_LineLength+m_LineMargin  : Bottom half of segment
-    //  m_LineMargin                            : Bottom digit boarder
-    //  ----------------------
-    //  m_LineMargin*6 + m_LineLength*2 == Total height of digit.
-    //  Therefore, (m_LineMargin*6 + m_LineLength*2) must equal Height
-    //
-    //  Spacing between characters can then be calculated as follows:
-    //  m_LineMargin                            : before the digit,
-    //  m_LineMargin+m_LineLength+m_LineMargin  : for the digit width
-    //  m_LineMargin                            : after the digit
-    //  = m_LineMargin*4 + m_LineLength
-    const int Height = CurrentSize.GetHeight();
-
-    if ((Height * 0.075) < 1)
-        m_LineMargin = 1;
-    else
-        m_LineMargin = (int)(Height * 0.075);
-
-    if ((Height * 0.275) < 1)
-        m_LineLength = 1;
-    else
-        m_LineLength = (int)(Height * 0.275);
-
-    m_LineWidth = m_LineMargin;
-
-    m_DigitMargin = m_LineMargin * 4;
-
-    // Count the number of characters in the string; '.' characters are not
-    // included because they do not take up space in the display
-    int count = 0;
-    for (unsigned int i = 0; i < m_Value.Len(); i++)
-        if (m_Value.GetChar(i) != '.')
-            count++;
-    const int ValueWidth = (m_LineLength + m_DigitMargin) * count;
-    const int ClientWidth = CurrentSize.GetWidth();
-
-    switch (m_Alignment)
-    {
-        case wxLED_ALIGN_LEFT :
-            m_LeftStartPos = m_LineMargin;
-            break;
-        case wxLED_ALIGN_RIGHT :
-            m_LeftStartPos = ClientWidth - ValueWidth - m_LineMargin;
-            break;
-        case wxLED_ALIGN_CENTER :
-            m_LeftStartPos = (ClientWidth - ValueWidth) / 2;
-            break;
-        default :
-            wxFAIL_MSG(wxT("Unknown alignent value for wxLEDNumberCtrl."));
-            break;
-    }
-}
-
-
-void wxLEDNumberCtrl::OnSize(wxSizeEvent &Event)
-{
-    RecalcInternals(Event.GetSize());
-
-    Event.Skip();
-}

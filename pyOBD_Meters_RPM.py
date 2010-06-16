@@ -13,6 +13,7 @@ import SpeedMeter as SM
 from math import pi, sqrt
 import wx.gizmos as gizmos
 from pyOBD_Meters_Constants import pyOBD_Meters_Constants as CONST
+from ledctrl import ledctrl as LEDControl
 
 
 """
@@ -128,11 +129,12 @@ class pyOBD_Meters_RPM():
                 pos = (self.GaugeWindow.GetWidth()/2 - 60, self.GaugeWindow.GetBottomTextBottom())
                 size = (120, 30)
                 style = gizmos.LED_ALIGN_CENTER | wx.NO_BORDER
-                self.led = gizmos.LEDNumberCtrl(self.getSpeedWindow(), -1, pos, size, style)
-                self.led.SetBackgroundColour(CONST.M_LARGE_BG_COLOR)
+                
+                #self.led = gizmos.LEDNumberCtrl(self.getSpeedWindow(), -1, pos, size, style)
+                self.led = LEDControl(self.getSpeedWindow(), -1, pos, size, style)
+                #self.led.SetBackgroundColour(CONST.M_LARGE_BG_COLOR)
+                self.led.SetBackgroundColour(wx.Colour(0, 0, 0, 255))
                 self.led.SetForegroundColour(CONST.M_LARGE_LED_COLOR)
-                print self.led.GetBorder()
-                print wx.NO_BORDER
 
             self.led.SetValue(str(int(value*1000)))
 
