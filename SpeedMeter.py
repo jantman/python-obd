@@ -30,6 +30,10 @@
 #
 # Or, Obviously, To The wxPython Mailing List!!!
 #
+# MODIFIED to add native Python wx.gizmos.LEDNubmerCtrl-type display, and a number of other things.
+# by Jason Antman <http://www.jasonantman.com> <jason@jasonantman.com>
+# Modifications Copyright 2010 Jason Antman.
+#
 #
 # End Of Comments
 # --------------------------------------------------------------------------- #
@@ -244,13 +248,17 @@ class BufferedWindow(wx.Window):
         
 
     def Draw(self, dc):
-        ## just here as a place holder.
-        ## This method should be over-ridden when sub-classed
+        """
+        just here as a place holder.
+        This method should be over-ridden when sub-classed
+        """
         pass
 
 
     def OnPaint(self, event):
-        # All that is needed here is to draw the buffer to screen
+        """
+        All that is needed here is to draw the buffer to screen
+        """
         
         if self._bufferedstyle == SM_BUFFERED_DC:
             dc = wx.BufferedPaintDC(self, self._Buffer)
@@ -312,6 +320,19 @@ class BufferedWindow(wx.Window):
 #----------------------------------------------------------------------
 
 class SpeedMeter(BufferedWindow):
+    """
+    Class for a gauge-style display using an arc marked with tick marks and interval numbers, and a moving needle/hand/pointer.
+
+    MODIFIED to add native Python wx.gizmos.LEDNubmerCtrl-type display, and a number of other things by Jason Antman <http://www.jasonantman.com> <jason@jasonantman.com>
+
+    @todo: Need to document everything (all methods).
+    @todo: Build example code.
+    @todo: Find everything used internally only and prefix methods with "__"
+    @todo: Find all "raise" statements, and any "print" statements that print an error, make them work with exceptions
+    @todo: change all mentions of "hand" to "needle"
+    
+    """
+
 
     bottomTextBottom = None
     DEBUG = False # controls debugging print statements
@@ -359,7 +380,6 @@ class SpeedMeter(BufferedWindow):
 
            - SM_MOUSE_TRACK: The Mouse Left Click/Drag Allow You To Change The
                              SpeedMeter Value Interactively.
-
         """
 
         self._extrastyle = extrastyle
@@ -426,7 +446,7 @@ class SpeedMeter(BufferedWindow):
         self._LEDheight = 0
         self._LEDx = 0
         self._LEDy = 0
-        self.InitLEDInternals()
+        self._InitLEDInternals()
         self.SetLEDAlignment()
         self.SetDrawFaded()
         
@@ -441,9 +461,16 @@ class SpeedMeter(BufferedWindow):
                     
         
     def Draw(self, dc):
-        """ Draws Everything On The Empty Bitmap.
+        """
+        Draws Everything On The Empty Bitmap.
 
-        Here All The Chosen Styles Are Applied. """
+        Here All The Chosen Styles Are Applied.
+
+        GIGANTIC HUMONGOUS UGLY function that draws I{everything} on the bitmap except for the LEDs.
+
+        @param dc: the dc
+        @type dc: L{wx.BufferedDC}
+        """
         
         size  = self.GetClientSize()
 
@@ -529,8 +556,8 @@ class SpeedMeter(BufferedWindow):
         # This Because DrawArc Does Not Draw Last Point
         offset = 0.1*self.scale/180.0        
 
-        xstart, ystart = self.CircleCoords(radius+1, -endangle, centerX, centerY)
-        xend, yend = self.CircleCoords(radius+1, -startangle-offset, centerX, centerY)
+        xstart, ystart = self.__CircleCoords(radius+1, -endangle, centerX, centerY)
+        xend, yend = self.__CircleCoords(radius+1, -startangle-offset, centerX, centerY)
             
         # Calculate The Angle For The Current Value Of SpeedMeter
         accelangle = (currentvalue - start)/float(span)*(startangle-endangle) - startangle
@@ -551,13 +578,13 @@ class SpeedMeter(BufferedWindow):
                 fillerstart = -endangle
                 fillerend = accelangle
 
-            xs1, ys1 = self.CircleCoords(fillerendradius, fillerstart, centerX, centerY)
-            xe1, ye1 = self.CircleCoords(fillerendradius, fillerend, centerX, centerY)
-            xs2, ys2 = self.CircleCoords(fillerstartradius, fillerstart, centerX, centerY)
-            xe2, ye2 = self.CircleCoords(fillerstartradius, fillerend, centerX, centerY)
+            xs1, ys1 = self.__CircleCoords(fillerendradius, fillerstart, centerX, centerY)
+            xe1, ye1 = self.__CircleCoords(fillerendradius, fillerend, centerX, centerY)
+            xs2, ys2 = self.__CircleCoords(fillerstartradius, fillerstart, centerX, centerY)
+            xe2, ye2 = self.__CircleCoords(fillerstartradius, fillerend, centerX, centerY)
 
             # Get The Sector In Which The Current Value Is
-            intersection = self.GetIntersection(currentvalue, intervals)
+            intersection = self.__GetIntersection(currentvalue, intervals)
             sectorradius = radius - 10*self.scale
             
         else:
@@ -572,13 +599,13 @@ class SpeedMeter(BufferedWindow):
                 
             if self._extrastyle & SM_DRAW_SECTORS == 0:
                 dc.SetBrush(wx.Brush(speedbackground))
-                xclean1, yclean1 = self.CircleCoords(sectorradius, -endangle, centerX, centerY)
-                xclean2, yclean2 = self.CircleCoords(sectorradius, -startangle-offset, centerX, centerY)
+                xclean1, yclean1 = self.__CircleCoords(sectorradius, -endangle, centerX, centerY)
+                xclean2, yclean2 = self.__CircleCoords(sectorradius, -startangle-offset, centerX, centerY)
                 dc.DrawArc(xclean1, yclean1, xclean2, yclean2, centerX, centerY)
             
 
         # This Is Needed To Fill The Partial Sector Correctly
-        xold, yold = self.CircleCoords(radius, startangle+endangle, centerX, centerY)
+        xold, yold = self.__CircleCoords(radius, startangle+endangle, centerX, centerY)
         
         # Draw The Sectors        
         for ii, interval in enumerate(intervals):
@@ -592,7 +619,7 @@ class SpeedMeter(BufferedWindow):
             angletext = -((pi/2.0) + angle)*180/pi
             textangles.append(angletext)
             colourangles.append(angle)
-            xtick, ytick = self.CircleCoords(radius, angle, centerX, centerY)
+            xtick, ytick = self.__CircleCoords(radius, angle, centerX, centerY)
             
             # Keep The Coordinates, We Will Need Them After To Position The Ticks            
             xcoords.append(xtick)
@@ -604,16 +631,16 @@ class SpeedMeter(BufferedWindow):
                 if self._extrastyle & SM_DRAW_PARTIAL_FILLER:
                     if direction == "Advance":
                         if current > currentvalue:
-                            x, y = self.CircleCoords(radius, angle, centerX, centerY)                    
+                            x, y = self.__CircleCoords(radius, angle, centerX, centerY)                    
                         else:
-                            x, y = self.CircleCoords(sectorradius, angle, centerX, centerY)
+                            x, y = self.__CircleCoords(sectorradius, angle, centerX, centerY)
                     else:
                         if current < end - currentvalue:
-                            x, y = self.CircleCoords(radius, angle, centerX, centerY)                    
+                            x, y = self.__CircleCoords(radius, angle, centerX, centerY)                    
                         else:
-                            x, y = self.CircleCoords(sectorradius, angle, centerX, centerY)
+                            x, y = self.__CircleCoords(sectorradius, angle, centerX, centerY)
                 else:
-                    x, y = self.CircleCoords(radius, angle, centerX, centerY)
+                    x, y = self.__CircleCoords(radius, angle, centerX, centerY)
                     
 
             if ii > 0:
@@ -667,7 +694,7 @@ class SpeedMeter(BufferedWindow):
                 if self._extrastyle & SM_DRAW_PARTIAL_FILLER and self._extrastyle & SM_DRAW_SECTORS:
                     dc.SetBrush(wx.Brush(fillercolour))                
                     dc.DrawArc(xs2, ys2, xe2, ye2, centerX, centerY)
-                    x, y = self.CircleCoords(sectorradius, angle, centerX, centerY)
+                    x, y = self.__CircleCoords(sectorradius, angle, centerX, centerY)
                     dc.SetBrush(wx.Brush(colours[ii]))
                     dc.DrawArc(xs1, ys1, xe1, ye1, centerX, centerY)
                     x = xs2
@@ -681,7 +708,7 @@ class SpeedMeter(BufferedWindow):
                 sectorendradius = radius - 10.0*self.scale
                 sectorstartradius = radius
 
-                xps, yps = self.CircleCoords(sectorstartradius, angle, centerX, centerY)
+                xps, yps = self.__CircleCoords(sectorstartradius, angle, centerX, centerY)
                 
                 if ii > 0:
                     dc.SetBrush(wx.Brush(colours[ii-1]))
@@ -693,8 +720,8 @@ class SpeedMeter(BufferedWindow):
 
         if self._extrastyle & SM_DRAW_PARTIAL_SECTORS:
             
-            xps1, yps1 = self.CircleCoords(sectorendradius, -endangle+2*offset, centerX, centerY)
-            xps2, yps2 = self.CircleCoords(sectorendradius, -startangle-2*offset, centerX, centerY)
+            xps1, yps1 = self.__CircleCoords(sectorendradius, -endangle+2*offset, centerX, centerY)
+            xps2, yps2 = self.__CircleCoords(sectorendradius, -startangle-2*offset, centerX, centerY)
                 
             dc.SetBrush(wx.Brush(speedbackground))
             dc.DrawArc(xps1, yps1, xps2, yps2, centerX, centerY)
@@ -704,7 +731,7 @@ class SpeedMeter(BufferedWindow):
 
             dc.SetPen(wx.TRANSPARENT_PEN)
 
-            xcurrent, ycurrent = self.CircleCoords(radius, accelangle, centerX, centerY)
+            xcurrent, ycurrent = self.__CircleCoords(radius, accelangle, centerX, centerY)
             
             # calculate gradient coefficients
             col2 = self.GetSecondGradientColour()
@@ -731,8 +758,8 @@ class SpeedMeter(BufferedWindow):
                 dc.SetBrush(wx.Brush(currCol))
 
                 gradradius = flrect - radiusteps*ind
-                xst1, yst1 = self.CircleCoords(gradradius, -endangle, centerX, centerY)
-                xen1, yen1 = self.CircleCoords(gradradius, -startangle-offset, centerX, centerY)
+                xst1, yst1 = self.__CircleCoords(gradradius, -endangle, centerX, centerY)
+                xen1, yen1 = self.__CircleCoords(gradradius, -startangle-offset, centerX, centerY)
 
                 if self._extrastyle & SM_DRAW_PARTIAL_FILLER:
                     if gradradius >= fillerendradius:
@@ -744,8 +771,8 @@ class SpeedMeter(BufferedWindow):
                         if interface == 0:
                             interface = 1
                             myradius = fillerendradius + 1
-                            xint1, yint1 = self.CircleCoords(myradius, -endangle, centerX, centerY)
-                            xint2, yint2 = self.CircleCoords(myradius, -startangle-offset, centerX, centerY)
+                            xint1, yint1 = self.__CircleCoords(myradius, -endangle, centerX, centerY)
+                            xint2, yint2 = self.__CircleCoords(myradius, -startangle-offset, centerX, centerY)
                             dc.DrawArc(xint1, yint1, xint2, yint2, centerX, centerY)
                             
                         dc.DrawArc(xst1, yst1, xen1, yen1, centerX, centerY)
@@ -755,8 +782,8 @@ class SpeedMeter(BufferedWindow):
                             if interface == 0:
                                 interface = 1
                                 myradius = sectorendradius + 1
-                                xint1, yint1 = self.CircleCoords(myradius, -endangle, centerX, centerY)
-                                xint2, yint2 = self.CircleCoords(myradius, -startangle-offset, centerX, centerY)
+                                xint1, yint1 = self.__CircleCoords(myradius, -endangle, centerX, centerY)
+                                xint2, yint2 = self.__CircleCoords(myradius, -startangle-offset, centerX, centerY)
                                 dc.DrawArc(xint1, yint1, xint2, yint2, centerX, centerY)
                             else:
                                 dc.DrawArc(xst1, yst1, xen1, yen1, centerX, centerY)
@@ -819,12 +846,12 @@ class SpeedMeter(BufferedWindow):
         
             if self._extrastyle & SM_ROTATE_TEXT:
                 angis = colourangles[ii] - float(width)/(2.0*radius)
-                x, y = self.CircleCoords(radius-10.0*self.scale, angis, centerX, centerY)
+                x, y = self.__CircleCoords(radius-10.0*self.scale, angis, centerX, centerY)
                 dc.DrawRotatedText(strings, x, y, angles)
             else:
                 angis = colourangles[ii]
                 if self._extrastyle & SM_DRAW_FANCY_TICKS == 0:
-                    x, y = self.CircleCoords(radius-10*self.scale, angis, centerX, centerY)
+                    x, y = self.__CircleCoords(radius-10*self.scale, angis, centerX, centerY)
                     lX = lX*len(strings)
                     x = x - lX - width*cos(angis)/2.0
                     y = y - lY - height*sin(angis)/2.0
@@ -834,7 +861,7 @@ class SpeedMeter(BufferedWindow):
                     fancystr = fancystr + ' color="' + fcolour + '"' + ' style="' + fstyle + '"> ' + strings + ' </font>'
 
                     width, height, dummy = fancytext.GetFullExtent(fancystr, dc)
-                    x, y = self.CircleCoords(radius-10*self.scale, angis, centerX, centerY)
+                    x, y = self.__CircleCoords(radius-10*self.scale, angis, centerX, centerY)
                     x = x - width/2.0 - width*cos(angis)/2.0
                     y = y - height/2.0 - height*sin(angis)/2.0
                     fancytext.RenderToDC(fancystr, dc, x, y)
@@ -878,7 +905,7 @@ class SpeedMeter(BufferedWindow):
                         rectangle = angle + pi/2.0
                         sinrect = sin(rectangle)
                         cosrect = cos(rectangle)
-                        xt, yt = self.CircleCoords(radius, angle, centerX, centerY)
+                        xt, yt = self.__CircleCoords(radius, angle, centerX, centerY)
                         x1 = xt - self.scale*cosrect
                         y1 = yt - self.scale*sinrect
                         x2 = x1 + self.scale*cosrect
@@ -993,7 +1020,7 @@ class SpeedMeter(BufferedWindow):
         if self._extrastyle & SM_DRAW_MIDDLE_ICON:
         
             middleicon = self.GetMiddleIcon()
-            middlewidth, middleheight = self.GetMiddleIconDimens()
+            middlewidth, middleheight = self.__GetMiddleIconDimens()
             middleicon.SetWidth(middlewidth*self.scale)
             middleicon.SetHeight(middleheight*self.scale)
             middleangle = (startangle + endangle)/2.0
@@ -1023,12 +1050,12 @@ class SpeedMeter(BufferedWindow):
             else:
                 maxradius = radius-5*self.scale-textheight
                 
-            xarr, yarr = self.CircleCoords(maxradius, accelangle, centerX, centerY)
+            xarr, yarr = self.__CircleCoords(maxradius, accelangle, centerX, centerY)
 
             if handstyle == "Arrow":
-                x1, y1 = self.CircleCoords(maxradius, accelangle - 4.0/180, centerX, centerY)
-                x2, y2 = self.CircleCoords(maxradius, accelangle + 4.0/180, centerX, centerY)
-                x3, y3 = self.CircleCoords(maxradius+3*(abs(xarr-x1)), accelangle, centerX, centerY)
+                x1, y1 = self.__CircleCoords(maxradius, accelangle - 4.0/180, centerX, centerY)
+                x2, y2 = self.__CircleCoords(maxradius, accelangle + 4.0/180, centerX, centerY)
+                x3, y3 = self.__CircleCoords(maxradius+3*(abs(xarr-x1)), accelangle, centerX, centerY)
 
                 newx = centerX + 4*cos(accelangle)*self.scale
                 newy = centerY + 4*sin(accelangle)*self.scale
@@ -1042,7 +1069,7 @@ class SpeedMeter(BufferedWindow):
                 x3 = centerX - 4*self.scale*sin(accelangle)
                 y3 = centerY + 4*self.scale*cos(accelangle)
 
-                x4, y4 = self.CircleCoords(5*self.scale*sqrt(3), accelangle+pi, centerX, centerY)   
+                x4, y4 = self.__CircleCoords(5*self.scale*sqrt(3), accelangle+pi, centerX, centerY)   
                 
             if self._extrastyle & SM_DRAW_SHADOW:            
 
@@ -1099,14 +1126,19 @@ class SpeedMeter(BufferedWindow):
 
         # here is where we draw the LEDNumberCtrl-style display at the bottom, if requested
         if self._extrastyle & SM_DRAW_BOTTOM_LED:
-            self.DrawLED(dc, centerX)
+            self._DrawLED(dc, centerX)
 
 
         dc.EndDrawing()
 
 
     def SetIntervals(self, intervals=None):
-        """ Sets The Intervals For SpeedMeter (Main Ticks Numeric Values)."""
+        """
+        Sets The Intervals For SpeedMeter (Main Ticks Numeric Values).
+
+        @param intervals: list of the interval end points
+        @type intervals: L{list} of L{int}s or L{float}s, one marking the end of each interval
+        """
 
         if intervals is None:
             intervals = [0, 50, 100]
@@ -1115,7 +1147,11 @@ class SpeedMeter(BufferedWindow):
 
 
     def GetIntervals(self):
-        """ Gets The Intervals For SpeedMeter. """
+        """
+        Gets The Intervals For SpeedMeter.
+
+        @rtype: L{list} of L{int}s or L{float}s, one marking the end of each interval
+        """
         
         return self._intervals
 
@@ -1141,11 +1177,24 @@ class SpeedMeter(BufferedWindow):
         return self.faceBitmap.GetWidth()
 
     def SetSpeedValue(self, value=None):
-        """ Sets The Current Value For SpeedMeter. """
+        """
+        Sets The Current Value For SpeedMeter.
+        
+        Please also see L{SetValueMultiplier}() function.
+
+        The value MUST be within the range specified by the L{intervals} (see L{GetIntervals}).
+
+        Calling this function will trigger the L{UpdateDrawing}() method to redraw.
+
+        @param value: the desired value
+        @type value: L{int} or L{float}
+        """
 
         if value is None:
             value = (max(self._intervals) - min(self._intervals))/2.0
         else:
+            if not (isinstance(value, int) or isinstance(value, float)):
+                raise "\nERROR: Value must be of int or float type, not " + str(type(value))
             if value < min(self._intervals):
                 raise "\nERROR: Value Is Smaller Than Minimum Element In Points List"
                 return
@@ -1162,33 +1211,52 @@ class SpeedMeter(BufferedWindow):
         
 
     def GetSpeedValue(self):
-        """ Gets The Current Value For SpeedMeter. """
+        """
+        Gets The Current Value For SpeedMeter.
+
+        @rtype: L{int} or L{float}
+        """
 
         return self._speedvalue
     
 
     def SetAngleRange(self, start=0, end=pi):
-        """ Sets The Range Of Existence For SpeedMeter.
+        """
+        Sets The Range Of Existence For SpeedMeter.
 
         This Values *Must* Be Specifiend In RADIANS.
+
+        @param start: the start angle (default 0)
+        @type start: L{int} in radians
+        @param end: the end angle (default pi)
+        @type end: L{int} in radians
         """
         
         self._anglerange = [start, end]
 
 
     def GetAngleRange(self):
-        """ Gets The Range Of Existence For SpeedMeter.
+        """
+        Gets The Range Of Existence For SpeedMeter.
 
         The Returned Values Are In RADIANS.
+
+        @rtype: L{list} of L{int}s (radians) like [start, end]
         """
         
         return self._anglerange        
         
 
     def SetIntervalColours(self, colours=None):
-        """ Sets The Colours For The Intervals.
+        """
+        Sets The Colours For The Intervals.
 
         Every Intervals (Circle Sector) Should Have A Colour.
+
+        Expects a list of L{wx.Colour}s of the same length as the number of intervals.
+
+        @param colours: list of colours to use for intervals
+        @type colours: L{list} of L{wx.Colour}s of same length as number of intervals
         """
         
         if colours is None:
@@ -1211,7 +1279,11 @@ class SpeedMeter(BufferedWindow):
         
 
     def GetIntervalColours(self):
-        """ Gets The Colours For The Intervals."""
+        """
+        Gets The Colours For The Intervals.
+
+        @rtype: L{list} of L{wx.Colour}s
+        """
         
         if hasattr(self, "_intervalcolours"):
             return self._intervalcolours
@@ -1220,7 +1292,18 @@ class SpeedMeter(BufferedWindow):
 
 
     def SetTicks(self, ticks=None):
-        """ Sets The Ticks For SpeedMeter Intervals (Main Ticks String Values)."""
+        """
+        Sets The Ticks For SpeedMeter Intervals (Main Ticks String Values).
+
+        Must be a list of strings, of the same length as the number of intervals.
+
+        This should probably not be called from outside the class, unless you want to set the interval ticks to something weird (maybe a fuel meter using "1/4", "1/2", etc.).
+        
+        It is probably better to use the L{SetValueMultiplier}() function if you're dealing with linear integers.
+
+        @param ticks: list of strings, of the same length as the number of intervals.
+        @type ticks: L{list} of L{string}s
+        """
         
         if ticks is None:
             if not hasattr(self, "_anglerange"):
@@ -1245,7 +1328,11 @@ class SpeedMeter(BufferedWindow):
             
 
     def GetTicks(self):
-        """ Gets The Ticks For SpeedMeter Intervals (Main Ticks String Values)."""
+        """
+        Gets The Ticks For SpeedMeter Intervals (Main Ticks String Values).
+
+        @rtype: L{list} of L{string}s
+        """
         
         if hasattr(self, "_intervalticks"):
             return self._intervalticks
@@ -1254,7 +1341,12 @@ class SpeedMeter(BufferedWindow):
 
 
     def SetTicksFont(self, font=None):
-        """ Sets The Ticks Font."""
+        """
+        Sets The Ticks Font.
+
+        @param font: the font for the text (default 10pt, wx.Font(1, wx.SWISS, wx.NORMAL, wx.BOLD, False))
+        @type font: L{wx.Font}
+        """
         
         if font is None:
             self._originalfont = [wx.Font(10, wx.SWISS, wx.NORMAL, wx.BOLD, False)]
@@ -1265,13 +1357,22 @@ class SpeedMeter(BufferedWindow):
 
 
     def GetTicksFont(self):
-        """ Gets The Ticks Font."""
+        """
+        Gets The Ticks Font.
+
+        @rtype: L{tuple} of (L{wx.Font}, L{float} size)        
+        """
         
         return self._originalfont[:], self._originalsize
         
 
     def SetTicksColour(self, colour=None):
-        """ Sets The Ticks Colour."""
+        """
+        Sets The Ticks Colour.
+
+        @param colour
+        @type colour: L{wx.Colour}
+        """
         
         if colour is None:
             colour = wx.BLUE
@@ -1280,13 +1381,22 @@ class SpeedMeter(BufferedWindow):
 
 
     def GetTicksColour(self):
-        """ Gets The Ticks Colour."""
+        """
+        Gets The Ticks Colour.
+
+        @rtype: L{wx.Colour}
+        """
         
         return self._tickscolour
     
 
     def SetSpeedBackground(self, colour=None):
-        """ Sets The Background Colour Outside The SpeedMeter Control."""
+        """
+        Sets The Background Colour Outside The SpeedMeter Control.
+
+        @param colour
+        @type colour: L{wx.Colour}
+        """
         
         if colour is None:
             colour = wx.SystemSettings_GetColour(0)
@@ -1295,13 +1405,22 @@ class SpeedMeter(BufferedWindow):
 
 
     def GetSpeedBackground(self):
-        """ Gets The Background Colour Outside The SpeedMeter Control."""
+        """
+        Gets The Background Colour Outside The SpeedMeter Control.
+
+        @rtype: L{wx.Colour}
+        """
 
         return self._speedbackground        
 
 
     def SetHandColour(self, colour=None):
-        """ Sets The Hand (Arrow Indicator) Colour."""
+        """
+        Sets The Hand (Arrow Indicator) Colour.
+
+        @param colour
+        @type colour: L{wx.Colour}
+        """
         
         if colour is None:
             colour = wx.RED
@@ -1310,13 +1429,22 @@ class SpeedMeter(BufferedWindow):
 
 
     def GetHandColour(self):
-        """ Gets The Hand (Arrow Indicator) Colour."""
+        """
+        Gets The Hand (Arrow Indicator) Colour.
+
+        @rtype: L{wx.Colour}
+        """
         
         return self._handcolour
         
 
     def SetArcColour(self, colour=None):
-        """ Sets The External Arc Colour (Thicker Line)."""
+        """
+        Sets The External Arc Colour (Thicker Line).
+
+        @param colour
+        @type colour: L{wx.Colour}
+        """
         
         if colour is None:
             colour = wx.BLACK
@@ -1325,13 +1453,22 @@ class SpeedMeter(BufferedWindow):
 
 
     def GetArcColour(self):
-        """ Gets The External Arc Colour."""
+        """
+        Gets The External Arc Colour.
+
+        @rtype: L{wx.Colour}
+        """
         
         return self._arccolour        
 
 
     def SetShadowColour(self, colour=None):
-        """ Sets The Hand's Shadow Colour."""
+        """
+        Sets The Hand's Shadow Colour.
+
+        @param colour
+        @type colour: L{wx.Colour}
+        """
         
         if colour is None:
             colour = wx.Colour(150, 150, 150)
@@ -1340,16 +1477,24 @@ class SpeedMeter(BufferedWindow):
 
 
     def GetShadowColour(self):
-        """ Gets The Hand's Shadow Colour."""
+        """
+        Gets The Hand's Shadow Colour.
+
+        @rtype: L{wx.Colour}
+        """
         
         return self._shadowcolour        
 
 
     def SetFillerColour(self, colour=None):
-        """ Sets The Partial Filler Colour.
+        """
+        Sets The Partial Filler Colour.
 
         A Circle Corona Near The Ticks Will Be Filled With This Colour, From
         The Starting Value To The Current Value Of SpeedMeter.
+
+        @param colour: the colour
+        @type colour: L{wx.Colour}
         """
         
         if colour is None:
@@ -1359,17 +1504,25 @@ class SpeedMeter(BufferedWindow):
 
 
     def GetFillerColour(self):
-        """ Gets The Partial Filler Colour."""
+        """
+        Gets The Partial Filler Colour.
+
+        @rtype: L{wx.Colour}
+        """
         
         return self._fillercolour
     
 
     def SetDirection(self, direction=None):
-        """ Sets The Direction Of Advancing SpeedMeter Value.
+        """
+        Sets The Direction Of Advancing SpeedMeter Value.
 
         Specifying "Advance" Will Move The Hand In Clock-Wise Direction (Like Normal
         Car Speed Control), While Using "Reverse" Will Move It CounterClock-Wise
         Direction.
+
+        @param direction: direction of needle movement
+        @type direction: L{string} "Advance" (default) or "Reverse"
         """
         
         if direction is None:
@@ -1383,13 +1536,22 @@ class SpeedMeter(BufferedWindow):
 
 
     def GetDirection(self):
-        """ Gets The Direction Of Advancing SpeedMeter Value."""
+        """
+        Gets The Direction Of Advancing SpeedMeter Value.
+
+        @rtype: L{string} "Advance" or "Reverse"
+        """
 
         return self._direction
 
     
     def SetNumberOfSecondaryTicks(self, ticknum=None):
-        """ Sets The Number Of Secondary (Intermediate) Ticks. """
+        """
+        Sets The Number Of Secondary (Intermediate) Ticks.
+
+        @param ticknum: number of secondary ticks (MUST be >= 1, default is 3)
+        @type ticknum: L{int}
+        """
         
         if ticknum is None:
             ticknum = 3
@@ -1402,13 +1564,22 @@ class SpeedMeter(BufferedWindow):
 
 
     def GetNumberOfSecondaryTicks(self):
-        """ Gets The Number Of Secondary (Intermediate) Ticks. """
+        """
+        Gets The Number Of Secondary (Intermediate) Ticks.
+
+        @rtype: L{int}
+        """
         
         return self._secondaryticks            
 
 
     def SetMiddleText(self, text=None):
-        """ Sets The Text To Be Drawn Near The Center Of SpeedMeter. """
+        """
+        Sets The Text To Be Drawn Near The Center Of SpeedMeter.
+
+        @param text: the text to draw
+        @type text: L{string}
+        """
         
         if text is None:
             text = ""
@@ -1417,13 +1588,22 @@ class SpeedMeter(BufferedWindow):
 
 
     def GetMiddleText(self):
-        """ Gets The Text To Be Drawn Near The Center Of SpeedMeter. """
+        """
+        Gets The Text To Be Drawn Near The Center Of SpeedMeter.
+
+        @rtype: L{string}
+        """
         
         return self._middletext
 
 
     def SetMiddleTextFont(self, font=None):
-        """ Sets The Font For The Text In The Middle."""
+        """
+        Sets The Font For The Text In The Middle.
+
+        @param font: the font for the text (default 10pt, wx.Font(1, wx.SWISS, wx.NORMAL, wx.BOLD, False))
+        @type font: L{wx.Font}
+        """
         
         if font is None:
             self._middletextfont = wx.Font(1, wx.SWISS, wx.NORMAL, wx.BOLD, False)
@@ -1436,13 +1616,22 @@ class SpeedMeter(BufferedWindow):
 
 
     def GetMiddleTextFont(self):
-        """ Gets The Font For The Text In The Middle."""
+        """
+        Gets The Font For The Text In The Middle.
+
+        @rtype: L{tuple} of (L{wx.Font}, L{float} size)
+        """
         
         return self._middletextfont, self._middletextsize
     
 
     def SetMiddleTextColour(self, colour=None):
-        """ Sets The Colour For The Text In The Middle."""
+        """
+        Sets The Colour For The Text In The Middle.
+
+        @param colour: the colour for the text
+        @type colour: L{wx.Colour}
+        """
         
         if colour is None:
             colour = wx.BLUE
@@ -1451,12 +1640,23 @@ class SpeedMeter(BufferedWindow):
 
 
     def GetMiddleTextColour(self):
-        """ Gets The Colour For The Text In The Middle."""
+        """
+        Gets The Colour For The Text In The Middle.
+
+        @rtype: L{wx.Colour}
+        """
         
         return self._middlecolour
     
     def SetBottomText(self, text=None):
-        """ Sets The Text To Be Drawn Near The Bottom Of SpeedMeter. Can have up to one newline."""
+        """
+        Sets The Text To Be Drawn Near The Bottom Of SpeedMeter. Can have up to one newline. This should be used for a label, such as the gauge type and scale (i.e. "RPM x1000)
+
+        Newlines are understood. The text is drawn as two separate lines, and this is taken into account when positioning the LED digits if used.
+
+        @param text: the text to draw
+        @type text: L{string}
+        """
         
         if text is None:
             text = ""
@@ -1465,13 +1665,22 @@ class SpeedMeter(BufferedWindow):
 
 
     def GetBottomText(self):
-        """ Gets The Text To Be Drawn Near The Center Of SpeedMeter. """
+        """
+        Gets The Text To Be Drawn Near The Bottom Of SpeedMeter (label)
+
+        @rtype: L{string}
+        """
         
         return self._bottomtext
 
 
     def SetBottomTextFont(self, font=None):
-        """ Sets The Font For The Text In The Bottom."""
+        """
+        Sets The Font For The Text In The Bottom.
+
+        @param font: the font for the text (default 10pt, wx.Font(1, wx.SWISS, wx.NORMAL, wx.BOLD, False))
+        @type font: L{wx.Font}
+        """
         
         if font is None:
             self._bottomtextfont = wx.Font(1, wx.SWISS, wx.NORMAL, wx.BOLD, False)
@@ -1484,13 +1693,22 @@ class SpeedMeter(BufferedWindow):
 
 
     def GetBottomTextFont(self):
-        """ Gets The Font For The Text In The Bottom."""
+        """
+        Gets The Font For The Text In The Bottom.
+
+        @rtype: L{tuple} of (L{wx.Font}, L{float} size)
+        """
         
         return self._bottomtextfont, self._bottomtextsize
     
 
     def SetBottomTextColour(self, colour=None):
-        """ Sets The Colour For The Text In The Bottom."""
+        """
+        Sets The Colour For The Text In The Bottom of the gauge (label).
+
+        @param colour: the colour for the text
+        @type colour: L{wx.Colour}
+        """
         
         if colour is None:
             colour = wx.BLUE
@@ -1498,20 +1716,43 @@ class SpeedMeter(BufferedWindow):
         self._bottomcolour = colour
 
     def SetLEDColour(self, colour=None):
-        """ Sets The Colour For Bottom gizmos.LEDNumberCtrl-like display."""
+        """
+        Sets The Colour For Bottom LED digits.
+
+        @param colour: the colour for the digits
+        @type colour: L{wx.Colour}
+        """
         
         if colour is None:
             colour = wx.GREEN
 
         self._ledcolour = colour
 
+    def GetLEDColour(self):
+        """
+        Gets The Colour For The LED Digits
+
+        @rtype: L{wx.Colour}
+        """
+        
+        return self._ledcolour
+
     def GetBottomTextColour(self):
-        """ Gets The Colour For The Text In The Bottom."""
+        """
+        Gets The Colour For The Text In The Bottom
+
+        @rtype: L{wx.Colour}
+        """
         
         return self._bottomcolour
 
     def SetMiddleIcon(self, icon):
-        """ Sets The Icon To Be Drawn Near The Center Of SpeedMeter. """
+        """
+        Sets The Icon To Be Drawn Near The Center Of SpeedMeter.
+
+        @param icon: The icon to be drawn
+        @type icon: L{wx.Icon}
+        """
         
         if icon.Ok():
             self._middleicon = icon
@@ -1522,19 +1763,28 @@ class SpeedMeter(BufferedWindow):
 
 
     def GetMiddleIcon(self):
-        """ Gets The Icon To Be Drawn Near The Center Of SpeedMeter. """
+        """
+        Gets The Icon To Be Drawn Near The Center Of SpeedMeter.
+
+        @rtype: L{wx.Icon}
+        """
         
         return self._middleicon        
 
 
-    def GetMiddleIconDimens(self):
-        """ Used Internally. """
+    def __GetMiddleIconDimens(self):
+        """
+        USED INTERNALLY ONLY - Undocumented. Do NOT call from outside this class.
+        """
         
         return self._middleicon.GetWidth(), self._middleicon.GetHeight()        
         
 
-    def CircleCoords(self, radius, angle, centerX, centerY):
-        """ Used Internally. """
+    def __CircleCoords(self, radius, angle, centerX, centerY):
+        """
+        USED INTERNALLY ONLY - Undocumented. Do NOT call from outside this class.
+        Method to get the coordinates of the circle.
+        """
         
         x = radius*cos(angle) + centerX
         y = radius*sin(angle) + centerY
@@ -1542,8 +1792,10 @@ class SpeedMeter(BufferedWindow):
         return x, y
 
 
-    def GetIntersection(self, current, intervals):
-        """ Used Internally. """
+    def __GetIntersection(self, current, intervals):
+        """
+        USED INTERNALLY ONLY - Undocumented. Do NOT call from outside this class.
+        """
 
         if self.GetDirection() == "Reverse":
             interval = intervals[:]
@@ -1564,7 +1816,12 @@ class SpeedMeter(BufferedWindow):
 
 
     def SetFirstGradientColour(self, colour=None):
-        """ Sets The First Gradient Colour (Near The Ticks). """
+        """
+        Sets The First Gradient Colour (Near The Ticks).
+
+        @param colour: Color for the second gradient
+        @type colour: L{wx.Colour}
+        """
         
         if colour is None:
             colour = wx.Colour(145, 220, 200)
@@ -1573,13 +1830,23 @@ class SpeedMeter(BufferedWindow):
 
         
     def GetFirstGradientColour(self):
-        """ Gets The First Gradient Colour (Near The Ticks). """
+        """
+        Gets The First Gradient Colour (Near The Ticks).
+
+        @return: first gradient color
+        @rtype: L{wx.Colour}
+        """
         
         return self._firstgradientcolour
 
 
     def SetSecondGradientColour(self, colour=None):
-        """ Sets The Second Gradient Colour (Near The Center). """
+        """
+        Sets The Second Gradient Colour (Near The Center).
+
+        @param colour: Color for the second gradient
+        @type colour: L{wx.Colour}
+        """
         
         if colour is None:
             colour = wx.WHITE
@@ -1588,17 +1855,27 @@ class SpeedMeter(BufferedWindow):
 
         
     def GetSecondGradientColour(self):
-        """ Gets The First Gradient Colour (Near The Center). """
+        """
+        Gets The First Gradient Colour (Near The Center).
+
+        @return: second gradient color
+        @rtype: L{wx.Colour}
+        """
         
         return self._secondgradientcolour
 
 
     def SetHandStyle(self, style=None):
-        """ Sets The Style For The Hand (Arrow Indicator).
+        """
+        Sets The Style For The Hand (Arrow Indicator).
 
         By Specifying "Hand" SpeedMeter Will Draw A Polygon That Simulates The Car
         Speed Control Indicator. Using "Arrow" Will Force SpeedMeter To Draw A
-        Simple Arrow. """
+        Simple Arrow.
+
+        @param style: hand style, string, either "Arrow" or "Hand"
+        @type style: L{string}
+        """
         
         if style is None:
             style = "Hand"
@@ -1611,30 +1888,40 @@ class SpeedMeter(BufferedWindow):
 
 
     def GetHandStyle(self):
-        """ Sets The Style For The Hand (Arrow Indicator)."""
+        """
+        Gets The Style For The Hand (Arrow Indicator)
+
+        @return: hand style, string either "Arrow" or "Hand"
+        @rtype: L{string}
+        """
         
         return self._handstyle        
         
 
     def DrawExternalArc(self, draw=True):
-        """ Specify Wheter Or Not You Wish To Draw The External (Thicker) Arc. """
-        
+        """
+        Specify Wheter Or Not You Wish To Draw The External (Thicker) Arc.
+
+        @param draw: Whether or not to draw the external arc.(default True)
+        @type draw: L{boolean}
+        """
         self._drawarc = draw
 
     def DrawExternalCircle(self, draw=False):
         """
         Specify Wheter Or Not You Wish To Draw The External (Thicker) Arc as a full circle.
 
-        @param draw: boolean, whether or not to draw the full circle
-        @type draw: C{boolean}
+        @param draw: boolean, whether or not to draw the full circle (default False)
+        @type draw: L{boolean}
         """
-        
         self._drawfullarc = draw
 
     def OnMouseMotion(self, event):
         """ Handles The Mouse Events.
 
         Here Only Left Clicks/Drags Are Involved. Should SpeedMeter Have Something More?
+
+        @todo: Do we even want this? What does it do? Seems like it would allow the user to change the value or something, which is BAD.
         """
         
         mousex = event.GetX()
@@ -1728,11 +2015,15 @@ class SpeedMeter(BufferedWindow):
 
         return stringstyle, integerstyle
 
-    # below here is stuff added for the LED control
+    # below here is stuff added by jantman for the LED control
     def SetDrawFaded(self, DrawFaded=None, Redraw=False):
         """
-        @type DrawFaded: C{boolean}
-        @type Redraw: C{boolean}
+        Set the option to draw the faded (non-used) LED segments.
+
+        @param DrawFaded: Whether or not to draw the unused segments.
+        @type DrawFaded: L{boolean}
+        @param Redraw: Whether or not to redraw NOW.
+        @type Redraw: L{boolean}
         """
 
         if DrawFaded is None:
@@ -1743,9 +2034,11 @@ class SpeedMeter(BufferedWindow):
             if Redraw:
                 Refresh(False)
 
-    def InitLEDInternals(self):
+    def _InitLEDInternals(self):
         """
-        Sets up the class variables for the LED display
+        Sets up the class variables for the LED control stuff.
+
+        Should ONLY be called INTERNALLY.
         """
         self._LineMargin = None
         self._LineLength = None
@@ -1753,43 +2046,21 @@ class SpeedMeter(BufferedWindow):
         self._DigitMargin = None
         self._LeftStartPos = None
 
-    def DrawLED(self, dc, CenterX):
+    def _DrawLED(self, dc, CenterX):
         """
-        Handles all of the drawing for the LED control
+        Handles all of the drawing for the LED control, just an extension to the original SpeedMeter Draw() method.
+
+        Should ONLY be called INTERNALLY.
+
+        @todo: this is hard coded to ignore the background - doesn't draw it. If you want something different, you need to change it.
+
+        @param dc: the DC
+        @type dc: L{dc}
+        @param CenterX: The X coordinate of the center of the gauge, as found in the original SpeedMeter code.
+        @type CenterX: L{int}
         """
-        size = self.GetClientSize()
-        Width = size.x
-        Height = size.y
 
-        self.RecalcInternals()
-
-        new_dim = size.Get()
-        
-        if not hasattr(self, "dim"):
-            self.dim = new_dim
-
-        #self.faceBitmap = wx.EmptyBitmap(size.width, size.height)
-        
-        #dc.BeginDrawing()
-
-        #wxBitmap *pMemoryBitmap = new wxBitmap(Width, Height);
-        #wxMemoryDC MemDc;
-        #MemDc.SelectObject(*pMemoryBitmap);
-
-        
-        # Draw background.
-
-        #background = self.GetBackgroundColour()
-        #dc.SetBackground(wx.Brush(background))
-        # BEGIN SEBUG
-        #dc.SetBackgroundMode(wx.TRANSPARENT)
-        #dc.SetBackground(wx.Brush(wx.Colour(255, 255, 255), wx.TRANSPARENT))
-        # END DEBUG
-        #dc.Clear()
-
-        #c.SetBrush(wxBrush(GetBackgroundColour(), wxSOLID));
-        #MemDc.DrawRectangle(wxRect(0, 0, size.width, size.height));
-        #MemDc.SetBrush(wxNullBrush);
+        self._RecalcInternals()
 
         # Iterate each digit in the value, and draw.
         if self.DEBUG is True:
@@ -1803,64 +2074,52 @@ class SpeedMeter(BufferedWindow):
 
             # Draw faded lines if wanted.
             if self._DrawFaded and (c != '.'):
-                self.DrawDigit(dc, DIGITALL, i)
+                self._DrawDigit(dc, DIGITALL, i)
                 
             # Draw the digits.
             if c == '0':
-                self.DrawDigit(dc, DIGIT0, i)
+                self._DrawDigit(dc, DIGIT0, i)
             elif c == '1':
-                self.DrawDigit(dc, DIGIT1, i)
+                self._DrawDigit(dc, DIGIT1, i)
             elif c == '2':
-                self.DrawDigit(dc, DIGIT2, i)
+                self._DrawDigit(dc, DIGIT2, i)
             elif c == '3':
-                self.DrawDigit(dc, DIGIT3, i)
+                self._DrawDigit(dc, DIGIT3, i)
             elif c == '4':
-                self.DrawDigit(dc, DIGIT4, i)
+                self._DrawDigit(dc, DIGIT4, i)
             elif c == '5':
-                self.DrawDigit(dc, DIGIT5, i)
+                self._DrawDigit(dc, DIGIT5, i)
             elif c == '6':
-                self.DrawDigit(dc, DIGIT6, i)
+                self._DrawDigit(dc, DIGIT6, i)
             elif c == '7':
-                self.DrawDigit(dc, DIGIT7, i)
+                self._DrawDigit(dc, DIGIT7, i)
             elif c == '8':
-                self.DrawDigit(dc, DIGIT8, i)
+                self._DrawDigit(dc, DIGIT8, i)
             elif c == '9':
-                self.DrawDigit(dc, DIGIT9, i)
+                self._DrawDigit(dc, DIGIT9, i)
             elif c == '-':
-                self.DrawDigit(dc, DASH, i)
+                self._DrawDigit(dc, DASH, i)
             elif c == '.':
-                self.DrawDigit(dc, DECIMALSIGN, (i-1))
+                self._DrawDigit(dc, DECIMALSIGN, (i-1))
             elif c == ' ':
                 # skip this
                 pass
             else:
                 print "Error: Undefined Digit Value: " + c
                 
-            """
-            { '0' : self.DrawDigit(dc, self.DIGIT0, i),
-              '1' : self.DrawDigit(dc, self.DIGIT1, i),
-              '2' : self.DrawDigit(dc, self.DIGIT2, i),
-              '3' : self.DrawDigit(dc, self.DIGIT3, i),
-              '4' : self.DrawDigit(dc, self.DIGIT4, i),
-              '5' : self.DrawDigit(dc, self.DIGIT5, i),
-              '6' : self.DrawDigit(dc, self.DIGIT6, i),
-              '7' : self.DrawDigit(dc, self.DIGIT7, i),
-              '8' : self.DrawDigit(dc, self.DIGIT8, i),
-              '9' : self.DrawDigit(dc, self.DIGIT9, i),
-              '-' : self.DrawDigit(dc, self.DASH, i),
-              '.' : self.DrawDigit(dc, self.DECIMALSIGN, (i-1))}[c]()
-            """
-            # case _T(' ') :   break; (skip this)
-            # undefined case: error message "Unknown digit value"
 
-        #dc.EndDrawing()
-        # Blit the memory dc to screen.
-        #Dc.Blit(0, 0, Width, Height, &MemDc, 0, 0, wxCOPY);
-        #delete pMemoryBitmap;
-
-    def DrawDigit(self, dc, Digit, Column):
+    def _DrawDigit(self, dc, Digit, Column):
         """
+        Internal code to actually draw the lines that make up a single digit.
 
+        Should be called INTERNALLY ONLY.
+
+        @param dc: The DC.
+        @type dc: L{dc}
+        @param Digit: The constant (mask) defining the lines of the specified digit.
+        @type Digit: L{int}
+        @param Column: the number of the column that the digit should be in
+        @type Column: L{int}
         """
         
         LineColor = self.GetForegroundColour()
@@ -1928,8 +2187,12 @@ class SpeedMeter(BufferedWindow):
 
         #Dc.SetPen(wxNullPen);
 
-    def RecalcInternals(self):
+    def _RecalcInternals(self):
         """
+        Recalculates all variables controlling the placement and gemoetry of the digits. Bases it off of the Frame size. This should calculate everything like the gauge center and work off of that.
+
+        Should be called INTERNALLY ONLY.
+
         Dimensions of LED segments
         
         Size of character is based on the HEIGH of the widget, NOT the width.
@@ -1954,12 +2217,11 @@ class SpeedMeter(BufferedWindow):
         = m_LineMargin*4 + m_LineLength
         """
 
-        """@todo: figure these out programmatically"""
         # the size params for just the LED area itself
-        LEDHeight = 30 # TODO - constant should be calculated
-        Height = LEDHeight
-        LEDWidth = 120 # TODO - constant should be calculated
         size = self.GetClientSize()
+        LEDHeight = int(size.y / 7) # based off of height of 30 in a 214px high client
+        Height = LEDHeight
+        LEDWidth = int(size.x / 2.4) # based off of width of 120 in a 290px wide client
         ClientWidth = size.x
 
         self.LEDyOffset = self.bottomTextBottom
@@ -2000,9 +2262,10 @@ class SpeedMeter(BufferedWindow):
         """
         Sets LED digit alignment.
         
-        @param Alignment
+        @param Alignment - the alignment of the LED digits - valid values are L{gizmos.LED_ALIGN_LEFT}, L{gizmos.LED_ALIGN_RIGHT}, L{gizmos.LED_ALIGN_CENTER} (center is default).
         @type Alignment: wxLEDValueAlign
-        @type Redraw: C{boolean}
+        @param Redraw: Whether or not to redraw NOW.
+        @type Redraw: L{boolean}
         """
         if Alignment is None:
             self._Alignment = Alignment
@@ -2017,8 +2280,12 @@ class SpeedMeter(BufferedWindow):
 
     def SetDrawFaded(self, DrawFaded=None, Redraw=False):
         """
-        @type DrawFaded: C{boolean}
-        @type Redraw: C{boolean}
+        Whether or not to draw the unused line segments. If true, draws them faded.
+
+        @param DrawFaded: Whether or not to draw the faded segments. (Default False)
+        @type DrawFaded: L{boolean}
+        @param Redraw: Whether or not to redraw NOW.
+        @type Redraw: L{boolean}
         """
 
         if DrawFaded is None:
@@ -2033,6 +2300,8 @@ class SpeedMeter(BufferedWindow):
         """
         Sets the value multiplier. Values set with SetValue() will be multiplied by this amount before being displayed on the LED control.
 
+        @param multiplier: the value multiplier
+        @type multiplier: L{int} or L{float}
         @todo: re-do all this by setting a ValueScale (maybe at create time) and using this scale to determine the gauge scale, also divide values by it before feeding into the meter code itself (i.e. LED will show value as passed with SetValue()).
         """
         self._ValueMultiplier = multiplier
