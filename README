@@ -1,11 +1,13 @@
+python-obd
 
+Some OBD code for Python.
 
 
 DEPENDENCIES:
 wxPython, wxWidgets/wxGTK
 
 
-
+See Also:
 http://www.suspectclass.com/sgifford/interceptty/
 http://freshmeat.net/projects/linuxserialsniffer/
 http://sites.google.com/site/ibarona/uspp
