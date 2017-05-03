@@ -28,6 +28,7 @@ import time
 from math import ceil
 import logging
 import argparse
+import sys
 
 import obd_sensors
 
@@ -80,7 +81,7 @@ def decrypt_dtc_code(code):
 class OBDPort:
     """ OBDPort abstracts all communication with OBD-II device."""
 
-    def __init__(self, portnum, baud=9600, timeout=2, reconn_attempts=5):
+    def __init__(self, portnum, baud=9600, timeout=4, reconn_attempts=5):
         """Initializes port by resetting device and gettings supported PIDs. """
         databits = 8
         par      = serial.PARITY_NONE  # parity
@@ -124,15 +125,23 @@ class OBDPort:
             time.sleep(2)
             logger.info('Current Protocol: %s', self.send_and_get('ATDP'))
             ready = self.send_and_get("0100")
-            logger.info("0100 response1: %s", ready)
+            logger.info("0100 response1: '%s'", ready)
             if ready == "BUSINIT: ...OK":
                 ready = self._read_result()
                 logger.info("0100 response2: %s", ready)
                 logger.info('Current Protocol: %s', self.send_and_get('ATDP'))
                 return None
-            elif ready == 'SEARCHING...':
+            elif ready.startswith('SEARCHING...'):
                 logger.info('ELM searching for protocol...')
-                ready = self._read_result()
+                time.sleep(3)
+                #ready = self._read_result()
+                ready = self.send_and_get("0100")
+                logger.info('0100 response2: %s', ready)
+                logger.info('Current Protocol: %s', self.send_and_get('ATDP'))
+                return None
+            elif ready.startswith('AUTO,'):
+                logger.info('ELM searching for protocol...')
+                ready = self.send_and_get('0100')
                 logger.info('0100 response2: %s', ready)
                 logger.info('Current Protocol: %s', self.send_and_get('ATDP'))
                 return None
@@ -210,15 +219,19 @@ class OBDPort:
         buffer = ""
         while True:
             c = self.port.read(1)
-            if c == '\r' and len(buffer) > 0:
+            # logger.debug("BUFFER='%s' (%s) c='%s'", buffer,
+            #             ['%x' % ord(x) for x in buffer], c)
+            if c == '>' and len(buffer) > 0:
                 break
             else:
+                if c == '>':
+                    logger.debug('Got promot character')
                 if buffer != "" or c != ">":
                     # if something is in buffer, add everything
                     buffer = buffer + c
         logger.debug("RESPONSE: %s (%s)", buffer,
-                     ['%x' % orc(c) for c in buffer])
-        return buffer
+                     ['%x' % ord(z) for z in buffer])
+        return buffer.strip("\r\n" + chr(13) + chr(12))
 
     # get sensor value from command
     def get_sensor_value(self, sensor):
