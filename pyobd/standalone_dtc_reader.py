@@ -43,6 +43,20 @@ logging.basicConfig(level=logging.WARNING, format=FORMAT)
 logger = logging.getLogger()
 
 
+def printable_response(response):
+    data = []
+    s = ''
+    for x in response:
+        hex_repr = '%#x' % x
+        data.append(hex_repr)
+        # replace non-printable characters with their hex codes
+        if x in string.digits or x in string.letters or x in string.punctuation:
+            s += x
+        else:
+            s += '<%s>' % hex_repr
+    return '"%s" (%s)' % (s, data)
+
+
 def hex_to_int(s):
     return int(s.lower(), 16)
 
@@ -53,7 +67,7 @@ def decrypt_dtc_code(code):
     current = code
     for i in range(0,3):
         if len(current)<4:
-            raise "Tried to decode bad DTC: %s" % code
+            raise "Tried to decode bad DTC: %s" % printable_response(code)
 
         tc = obd_sensors.hex_to_int(current[0]) #typecode
         tc = tc >> 2
@@ -109,52 +123,52 @@ class OBDPort:
         while 1:  # until error is returned try to connect
             try:
                 self.ELMver = self.send_and_get("atz")   # initialize
-                logger.info("atz response: %s", self.ELMver)
+                logger.info("atz response: %s", printable_response(self.ELMver))
             except serial.SerialException:
                 self.State = 0
                 logger.critical('Exception sending "atz"', exc_info=True)
                 return None
             resp = self.send_and_get("ate0")  # echo off
-            logger.info("ate0 response: %s", resp)
-            logger.info('Current Protocol: %s', self.send_and_get('ATDP'))
-            logger.info('Battery Voltage: %s', self.send_and_get('ATRV'))
+            logger.info("ate0 response: %s", printable_response(resp))
+            logger.info('Current Protocol: %s', printable_response(self.send_and_get('ATDP')))
+            logger.info('Battery Voltage: %s', printable_response(self.send_and_get('ATRV')))
             logger.info('Set protocol automatic: %s',
-                         self.send_and_get('ATSP0'))
+                        printable_response(self.send_and_get('ATSP0')))
             logger.info('Sleep 2s...')
             time.sleep(2)
-            logger.info('Current Protocol: %s', self.send_and_get('ATDP'))
+            logger.info('Current Protocol: %s', printable_response(self.send_and_get('ATDP')))
             ready = self.send_and_get("0100")
-            logger.info("0100 response1: '%s'", ready)
+            logger.info("0100 response1: '%s'", printable_response(ready))
             if ready == "BUSINIT: ...OK":
                 ready = self._read_result()
-                logger.info("0100 response2: %s", ready)
-                logger.info('Current Protocol: %s', self.send_and_get('ATDP'))
+                logger.info("0100 response2: %s", printable_response(ready))
+                logger.info('Current Protocol: %s', printable_response(self.send_and_get('ATDP')))
                 return None
             elif ready.startswith('SEARCHING...'):
                 logger.info('ELM searching for protocol...')
                 time.sleep(3)
                 #ready = self._read_result()
                 ready = self.send_and_get("0100")
-                logger.info('0100 response2: %s', ready)
-                logger.info('Current Protocol: %s', self.send_and_get('ATDP'))
+                logger.info('0100 response2: %s', printable_response(ready))
+                logger.info('Current Protocol: %s', printable_response(self.send_and_get('ATDP')))
                 return None
             elif ready.startswith('AUTO,'):
                 logger.info('ELM searching for protocol...')
                 ready = self.send_and_get('0100')
-                logger.info('0100 response2: %s', ready)
-                logger.info('Current Protocol: %s', self.send_and_get('ATDP'))
+                logger.info('0100 response2: %s', printable_response(ready))
+                logger.info('Current Protocol: %s', printable_response(self.send_and_get('ATDP')))
                 return None
             else:
                 # ready=ready[-5:]
                 # Expecting error message: BUSINIT:.ERROR (parse last 5 chars)
-                logger.info("Connection attempt failed: %s; sleeping 5s", ready)
+                logger.info("Connection attempt failed: %s; sleeping 5s", printable_response(ready))
                 time.sleep(5)
                 if count == reconn_attempts:
                     self.close()
                     self.State = 0
                     logger.critical('Reached maximum connection attempts')
                     return None
-                logger.info("Connection attempt: %s", str(count))
+                logger.info("Connection attempt: %d", count)
                 count += 1
 
     def close(self):
@@ -174,7 +188,7 @@ class OBDPort:
         """Internal use only: not a public interface"""
         self.port.flushOutput()
         self.port.flushInput()
-        logger.debug('SEND: "%s"', cmd)
+        logger.debug('SEND: "%s"', printable_response(cmd))
         for c in cmd:
             self.port.write(c)
         self.port.write("\r\n")
@@ -187,8 +201,8 @@ class OBDPort:
          
         # 9 seems to be the length of the shortest valid response
         if len(code) < 7:
-            logger.critical('Result: %s', code)
-            raise RuntimeError("Bogus Result: %s" % code)
+            logger.critical('Result: %s', printable_response(code))
+            raise RuntimeError("Bogus Result: %s" % printable_response(code))
 
         # get the first thing returned, echo should be off
         code = string.split(code, "\r")
@@ -211,7 +225,7 @@ class OBDPort:
         if self.port:
             return self._read_result()
         else:
-            logger.error("NO self.port!; buffer: %s", buffer)
+            logger.error("NO self.port!; buffer: %s", printable_response(buffer))
         return None
 
     def _read_result(self):
@@ -228,21 +242,21 @@ class OBDPort:
                 if buffer != "" or c != ">":
                     # if something is in buffer, add everything
                     buffer = buffer + c
-        logger.debug("RESPONSE: %s (%s)", buffer,
-                     ['%x' % ord(z) for z in buffer])
+        logger.debug("RESPONSE: %s", printable_response(buffer))
         return buffer.strip("\r\n" + chr(13) + chr(12))
 
     # get sensor value from command
     def get_sensor_value(self, sensor):
         """Internal use only: not a public interface"""
         cmd = sensor.cmd
-        logger.debug('Reading sensor %s', sensor)
+        logger.debug('Reading sensor %s (%s)', sensor.name.strip(), sensor.cmd)
         self.send_command(cmd)
         data = self.get_result()
         if data:
             data = self.interpret_result(data)
             if data != "NODATA":
                 data = sensor.value(data)
+                logger.debug('Sensor %s response: %s', sensor.cmd, printable_response(data))
         else:
             return "NORESPONSE"
         return data
@@ -253,6 +267,8 @@ class OBDPort:
         (Sensor Name (string), Sensor Value (string), Sensor Unit (string) ) """
         sensor = obd_sensors.SENSORS[sensor_index]
         r = self.get_sensor_value(sensor)
+        logger.debug('Sensor %d response: name=%s unit=%s value: %s',
+                     sensor.name, sensor.unit, printable_response(r))
         return sensor.name, r, sensor.unit
 
     def sensor_names(self):
@@ -285,6 +301,7 @@ class OBDPort:
         logger.info('Reading DTCs')
         dtcLetters = ["P", "C", "B", "U"]
         r = self.sensor(1)[1] #data
+        logger.debug('DTC sensor data: %s', printable_response(r))
         dtcNumber = r[0]
         mil = r[1]
         DTCCodes = []
@@ -292,9 +309,8 @@ class OBDPort:
         logger.info("Number of stored DTC: %s; MIL: %s", dtcNumber, mil)
         # get all DTC, 3 per mesg response
         for i in range(0, ((dtcNumber+2)/3)):
-            self.send_command(GET_DTC_COMMAND)
-            res = self.get_result()
-            logger.info("DTC result: %s", res)
+            res = self.send_and_get(GET_DTC_COMMAND)
+            logger.info("DTC result: %s", printable_response(res))
             for i in range(0, 3):
                 val1 = hex_to_int(res[3+i*6:5+i*6])
                 val2 = hex_to_int(res[6+i*6:8+i*6]) #get DTC codes from response (3 DTC each 2 bytes)
@@ -306,14 +322,14 @@ class OBDPort:
 
         #read mode 7
         logger.info('Reading Mode 7 data')
-        self.send_command(GET_FREEZE_DTC_COMMAND)
-        res = self.get_result()
+        res = self.send_and_get(GET_FREEZE_DTC_COMMAND)
+        logger.debug('Mode 7 result: %s', printable_response(res))
 
         if res[:7] == "NO DATA": #no freeze frame
             logger.warning('No freeze frame data')
             return DTCCodes
 
-        print("DTC freeze result: %s" %res)
+        logger.info("DTC freeze result: %s", printable_response(res))
         for i in range(0, 3):
             val1 = hex_to_int(res[3+i*6:5+i*6])
             val2 = hex_to_int(res[6+i*6:8+i*6]) #get DTC codes from response (3 DTC each 2 bytes)
@@ -327,9 +343,7 @@ class OBDPort:
 
     def clear_dtc(self):
         """Clears all DTCs and freeze frame data"""
-        self.send_command(CLEAR_DTC_COMMAND)
-        r = self.get_result()
-        return r
+        return self.send_and_get(CLEAR_DTC_COMMAND)
 
     def log(self, sensor_index, filename):
         file = open(filename, "w")
