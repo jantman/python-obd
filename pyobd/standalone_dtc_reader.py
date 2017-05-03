@@ -44,8 +44,7 @@ logger = logging.getLogger()
 
 
 def hex_to_int(s):
-    i = eval("0x" + s, {}, {})
-    return i
+    return int(s.lower(), 16)
 
 
 def decrypt_dtc_code(code):
