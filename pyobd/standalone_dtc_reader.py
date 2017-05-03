@@ -47,7 +47,7 @@ def printable_response(response):
     data = []
     s = ''
     for x in response:
-        hex_repr = '%#x' % x
+        hex_repr = '%#x' % ord(x)
         data.append(hex_repr)
         # replace non-printable characters with their hex codes
         if x in string.digits or x in string.letters or x in string.punctuation:
@@ -256,7 +256,7 @@ class OBDPort:
             data = self.interpret_result(data)
             if data != "NODATA":
                 data = sensor.value(data)
-                logger.debug('Sensor %s response: %s', sensor.cmd, printable_response(data))
+                logger.debug('Sensor %s response: %s', sensor.cmd, data)
         else:
             return "NORESPONSE"
         return data
@@ -267,8 +267,8 @@ class OBDPort:
         (Sensor Name (string), Sensor Value (string), Sensor Unit (string) ) """
         sensor = obd_sensors.SENSORS[sensor_index]
         r = self.get_sensor_value(sensor)
-        logger.debug('Sensor %d response: name=%s unit=%s value: %s',
-                     sensor.name, sensor.unit, printable_response(r))
+        logger.debug('Sensor response: name=%s unit=%s value: %s',
+                     sensor.name, sensor.unit, r)
         return sensor.name, r, sensor.unit
 
     def sensor_names(self):
@@ -301,7 +301,7 @@ class OBDPort:
         logger.info('Reading DTCs')
         dtcLetters = ["P", "C", "B", "U"]
         r = self.sensor(1)[1] #data
-        logger.debug('DTC sensor data: %s', printable_response(r))
+        logger.debug('DTC sensor data: %s', r)
         dtcNumber = r[0]
         mil = r[1]
         DTCCodes = []
