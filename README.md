@@ -5,6 +5,7 @@ python-obd
 
 Some OBD code for Python.
 
+# THIS IS ANCIENT. DON'T USE IT.
 
 DEPENDENCIES:
 wxPython, wxWidgets/wxGTK
